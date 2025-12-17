@@ -1,25 +1,42 @@
 import Layout from "@/components/layout";
 import MarketCard from "@/components/market-card";
-import { MOCK_MARKETS, CATEGORIES } from "@/lib/mock-data";
+import { CATEGORIES } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Flame, Sparkles, FilterX } from "lucide-react";
+import { ArrowRight, Flame, Sparkles, FilterX, Loader2 } from "lucide-react";
 import { useRoute, Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import { fetchMarkets, type Market } from "@/lib/api";
 
 export default function Home() {
   const [match, params] = useRoute("/markets/:category");
-  const categoryId = params?.category; // undefined if route is "/"
+  const categoryId = params?.category;
+  
+  const { data: markets = [], isLoading } = useQuery({
+    queryKey: ["markets"],
+    queryFn: fetchMarkets,
+  });
   
   // Filter logic
   const filteredMarkets = categoryId 
-    ? MOCK_MARKETS.filter(m => m.category.toLowerCase().replace(" ", "-") === categoryId || m.category.toLowerCase() === categoryId)
-    : MOCK_MARKETS;
+    ? markets.filter((m: Market) => m.category.toLowerCase().replace(" ", "-") === categoryId || m.category.toLowerCase() === categoryId)
+    : markets;
 
-  const featuredMarket = filteredMarkets.find(m => m.isFeatured);
-  const otherMarkets = filteredMarkets.filter(m => m !== featuredMarket);
+  const featuredMarket = filteredMarkets.find((m: Market) => m.isFeatured);
+  const otherMarkets = filteredMarkets.filter((m: Market) => m !== featuredMarket);
   
   const categoryLabel = categoryId 
     ? CATEGORIES.find(c => c.id === categoryId)?.label 
     : "All Markets";
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>

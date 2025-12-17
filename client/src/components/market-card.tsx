@@ -1,13 +1,23 @@
-import { Market } from "@/lib/mock-data";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { BarChart3, MessageSquare } from "lucide-react";
 import { Link } from "wouter";
+import { Market } from "@/lib/api";
 
 interface MarketCardProps {
   market: Market;
   featured?: boolean;
+}
+
+function formatVolume(volume: string): string {
+  const num = parseFloat(volume);
+  if (num >= 1000000) {
+    return `$${(num / 1000000).toFixed(1)}M`;
+  } else if (num >= 1000) {
+    return `$${(num / 1000).toFixed(1)}K`;
+  }
+  return `$${num.toFixed(0)}`;
 }
 
 export default function MarketCard({ market, featured = false }: MarketCardProps) {
@@ -55,22 +65,22 @@ export default function MarketCard({ market, featured = false }: MarketCardProps
                     </span>
                     <span className={cn(
                       "font-bold font-mono",
-                      outcome.probability > 50 ? "text-primary" : "text-foreground"
+                      parseFloat(outcome.probability) > 50 ? "text-primary" : "text-foreground"
                     )}>
-                      {outcome.probability}%
+                      {parseFloat(outcome.probability).toFixed(0)}%
                     </span>
                   </div>
                   {/* Progress Bar Container */}
                   <div className="h-2 w-full bg-muted/50 rounded-full overflow-hidden relative">
                     <div 
                       className={cn("h-full rounded-full transition-all duration-500 ease-out", outcome.color)}
-                      style={{ width: `${outcome.probability}%` }}
+                      style={{ width: `${parseFloat(outcome.probability)}%` }}
                     />
                     {/* Glowing effect for leader */}
-                    {outcome.probability > 50 && (
+                    {parseFloat(outcome.probability) > 50 && (
                       <div 
                         className={cn("absolute top-0 bottom-0 right-0 w-4 blur-sm bg-white/50", outcome.color)} 
-                        style={{ left: `${outcome.probability}%`, transform: 'translateX(-50%)' }}
+                        style={{ left: `${parseFloat(outcome.probability)}%`, transform: 'translateX(-50%)' }}
                       />
                     )}
                   </div>
@@ -83,7 +93,7 @@ export default function MarketCard({ market, featured = false }: MarketCardProps
           <div className="flex items-center justify-between pt-4 border-t border-border/30 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <BarChart3 className="w-3.5 h-3.5" />
-              <span className="font-mono">{market.volume} Vol.</span>
+              <span className="font-mono">{formatVolume(market.volume)} Vol.</span>
             </div>
             <div className="flex items-center gap-3">
                <div className="flex items-center gap-1 hover:text-foreground transition-colors">

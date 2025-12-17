@@ -176,17 +176,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="mt-8 pt-8 border-t border-border/40">
             <h4 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">My Activity</h4>
             <div className="px-4 py-2 text-sm text-muted-foreground italic">
-              {user.positions.length > 0 ? (
-                <div className="space-y-2">
-                   {user.positions.slice(0, 3).map((pos, i) => (
-                     <div key={i} className="text-xs">
-                        Bought {pos.shares.toFixed(0)} shares
-                     </div>
-                   ))}
-                   <Link href="/portfolio" className="text-primary hover:underline text-xs">View all</Link>
-                </div>
+              {user.isLoggedIn ? (
+                <Link href="/portfolio" className="text-primary hover:underline text-xs">View portfolio</Link>
               ) : (
-                "No recent trades"
+                "Connect wallet to trade"
               )}
             </div>
           </div>

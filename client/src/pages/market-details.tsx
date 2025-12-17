@@ -1,6 +1,5 @@
 import Layout from "@/components/layout";
 import { useRoute } from "wouter";
-import { MOCK_MARKETS } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,11 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Share2, Info, TrendingUp, Clock, AlertCircle } from "lucide-react";
+import { ArrowLeft, Share2, Info, TrendingUp, Clock, AlertCircle, Loader2 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Link } from "wouter";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchMarket, executeBuy, type Market } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 // Mock chart data generator
 const generateChartData = () => {
@@ -29,13 +31,50 @@ const generateChartData = () => {
 
 export default function MarketDetails() {
   const [match, params] = useRoute("/market/:id");
-  const id = params?.id;
-  const market = MOCK_MARKETS.find(m => m.id === id);
+  const id = params?.id ? parseInt(params.id) : 0;
   
-  const { user, buyShares } = useStore();
+  const { data: market, isLoading } = useQuery({
+    queryKey: ["market", id],
+    queryFn: () => fetchMarket(id),
+    enabled: id > 0,
+  });
+  
+  const { user, refreshUser } = useStore();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [amount, setAmount] = useState("");
-  const [selectedOutcome, setSelectedOutcome] = useState<string | null>(null);
+  const [selectedOutcome, setSelectedOutcome] = useState<number | null>(null);
   const [chartData] = useState(generateChartData());
+
+  const buyMutation = useMutation({
+    mutationFn: executeBuy,
+    onSuccess: ({ newBalance }) => {
+      toast({
+        title: "Order Filled",
+        description: `Successfully purchased shares for $${amount}`,
+      });
+      setAmount("");
+      refreshUser();
+      queryClient.invalidateQueries({ queryKey: ["portfolio", user.id] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Trade Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
 
   if (!market) {
     return (
@@ -56,11 +95,52 @@ export default function MarketDetails() {
     : market.outcomes[0];
 
   const handleBuy = () => {
-    if (activeOutcome && amount) {
-      buyShares(market.id, activeOutcome.id, parseFloat(amount), activeOutcome.probability / 100);
-      setAmount("");
+    if (!user.isLoggedIn) {
+      toast({
+        title: "Connect Wallet",
+        description: "Please connect your wallet to trade.",
+        variant: "destructive",
+      });
+      return;
     }
+
+    if (!activeOutcome || !amount) {
+      toast({
+        title: "Invalid Input",
+        description: "Please enter an amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const amountNum = parseFloat(amount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    buyMutation.mutate({
+      userId: user.id!,
+      marketId: market.id,
+      outcomeId: activeOutcome.id,
+      amountUSD: amountNum,
+      price: parseFloat(activeOutcome.probability) / 100,
+    });
   };
+
+  function formatVolume(volume: string): string {
+    const num = parseFloat(volume);
+    if (num >= 1000000) {
+      return `${(num / 1000000).toFixed(1)}M`;
+    } else if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}K`;
+    }
+    return `${num.toFixed(0)}`;
+  }
 
   return (
     <Layout>
@@ -84,7 +164,7 @@ export default function MarketDetails() {
                   {market.title}
                 </h1>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                   <span className="flex items-center gap-1"><TrendingUp className="w-4 h-4" /> ${market.volume} Vol</span>
+                   <span className="flex items-center gap-1"><TrendingUp className="w-4 h-4" /> ${formatVolume(market.volume)} Vol</span>
                    <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> Ends {market.endDate}</span>
                 </div>
               </div>
@@ -96,7 +176,7 @@ export default function MarketDetails() {
                 <div>
                   <div className="text-sm text-muted-foreground">Probability</div>
                   <div className="text-3xl font-mono font-bold text-primary">
-                    {activeOutcome?.probability}%
+                    {activeOutcome ? parseFloat(activeOutcome.probability).toFixed(0) : 0}%
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -107,6 +187,7 @@ export default function MarketDetails() {
                       size="sm"
                       onClick={() => setSelectedOutcome(outcome.id)}
                       className={activeOutcome?.id === outcome.id ? outcome.color + " text-white border-transparent" : ""}
+                      data-testid={`button-outcome-${outcome.id}`}
                     >
                       {outcome.label}
                     </Button>
