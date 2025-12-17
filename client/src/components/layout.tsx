@@ -1,14 +1,30 @@
-import { Link } from "wouter";
-import { Search, Bell, Menu, User, Wallet } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { Search, Bell, Menu, User, Wallet, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CATEGORIES } from "@/lib/mock-data";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import xenLogo from "@assets/generated_images/minimalist_abstract_x_logo_for_xen_markets.png";
+import { useStore } from "@/lib/store";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [location, setLocation] = useLocation();
+  const { user, login } = useStore();
+  
+  // Extract active category from URL /markets/:category
+  const activeCategory = location.startsWith("/markets/") 
+    ? location.split("/markets/")[1] 
+    : "all";
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -33,18 +49,50 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {/* Right Actions */}
           <div className="flex items-center gap-2">
             <div className="hidden md:flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                Portfolio
-              </Button>
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                Cash
-              </Button>
+              <Link href="/portfolio">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                  Portfolio
+                </Button>
+              </Link>
+              <Link href="/portfolio">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                  ${user.balance.toFixed(2)}
+                </Button>
+              </Link>
             </div>
             
-            <Button variant="outline" size="sm" className="rounded-full gap-2 border-primary/20 hover:bg-primary/10 hover:border-primary/50 text-primary">
-              <Wallet className="w-4 h-4" />
-              <span className="hidden sm:inline">Connect</span>
-            </Button>
+            {user.isLoggedIn ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="rounded-full gap-2 border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    <span className="hidden sm:inline">0x71...3A9</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <Link href="/portfolio">
+                    <DropdownMenuItem>Portfolio</DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuItem>Settings</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-destructive">
+                    <LogOut className="w-4 h-4 mr-2" /> Disconnect
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="rounded-full gap-2 border-primary/20 hover:bg-primary/10 hover:border-primary/50 text-primary"
+                onClick={login}
+              >
+                <Wallet className="w-4 h-4" />
+                <span className="hidden sm:inline">Connect</span>
+              </Button>
+            )}
             
             <Button variant="ghost" size="icon" className="rounded-full relative">
               <Bell className="w-5 h-5" />
@@ -65,14 +113,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     <Input placeholder="Search..." className="pl-9 bg-muted/50" />
                   </div>
                   {CATEGORIES.map((cat) => (
-                    <Button 
-                      key={cat.id} 
-                      variant="ghost" 
-                      className="justify-start gap-3"
-                    >
-                      <cat.icon className="w-4 h-4" />
-                      {cat.label}
-                    </Button>
+                    <Link key={cat.id} href={cat.id === 'all' ? '/' : `/markets/${cat.id}`}>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start gap-3"
+                      >
+                        <cat.icon className="w-4 h-4" />
+                        {cat.label}
+                      </Button>
+                    </Link>
                   ))}
                 </nav>
               </SheetContent>
@@ -87,26 +136,37 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <aside className="hidden lg:block w-64 py-8 pr-8 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r border-border/40">
           <nav className="space-y-1">
             {CATEGORIES.map((cat) => (
-              <Button
-                key={cat.id}
-                variant={activeCategory === cat.id ? "secondary" : "ghost"}
-                className={`w-full justify-start gap-3 rounded-xl px-4 py-6 text-sm font-medium transition-all ${
-                  activeCategory === cat.id 
-                    ? "bg-secondary/10 text-secondary hover:bg-secondary/20" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                }`}
-                onClick={() => setActiveCategory(cat.id)}
-              >
-                <cat.icon className={`w-5 h-5 ${activeCategory === cat.id ? "text-secondary" : ""}`} />
-                {cat.label}
-              </Button>
+              <Link key={cat.id} href={cat.id === 'all' ? '/' : `/markets/${cat.id}`}>
+                <Button
+                  variant={activeCategory === cat.id ? "secondary" : "ghost"}
+                  className={`w-full justify-start gap-3 rounded-xl px-4 py-6 text-sm font-medium transition-all ${
+                    activeCategory === cat.id 
+                      ? "bg-secondary/10 text-secondary hover:bg-secondary/20" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                  }`}
+                >
+                  <cat.icon className={`w-5 h-5 ${activeCategory === cat.id ? "text-secondary" : ""}`} />
+                  {cat.label}
+                </Button>
+              </Link>
             ))}
           </nav>
 
           <div className="mt-8 pt-8 border-t border-border/40">
             <h4 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">My Activity</h4>
             <div className="px-4 py-2 text-sm text-muted-foreground italic">
-              No recent trades
+              {user.positions.length > 0 ? (
+                <div className="space-y-2">
+                   {user.positions.slice(0, 3).map((pos, i) => (
+                     <div key={i} className="text-xs">
+                        Bought {pos.shares.toFixed(0)} shares
+                     </div>
+                   ))}
+                   <Link href="/portfolio" className="text-primary hover:underline text-xs">View all</Link>
+                </div>
+              ) : (
+                "No recent trades"
+              )}
             </div>
           </div>
         </aside>
