@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Search, Bell, Menu, User, Wallet, LogOut } from "lucide-react";
+import { Search, Bell, Menu, User, Wallet, LogOut, Trophy, Activity, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CATEGORIES } from "@/lib/mock-data";
@@ -151,6 +151,27 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             ))}
           </nav>
+
+          <div className="mt-8 pt-8 border-t border-border/40">
+            <h4 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Social</h4>
+            <nav className="space-y-1">
+              <Link href="/leaderboard">
+                <Button variant={location === '/leaderboard' ? "secondary" : "ghost"} className="w-full justify-start gap-3 rounded-xl px-4">
+                  <Trophy className="w-5 h-5" /> Leaderboard
+                </Button>
+              </Link>
+              <Link href="/activity">
+                <Button variant={location === '/activity' ? "secondary" : "ghost"} className="w-full justify-start gap-3 rounded-xl px-4">
+                  <Activity className="w-5 h-5" /> Activity
+                </Button>
+              </Link>
+              <Link href="/rewards">
+                <Button variant={location === '/rewards' ? "secondary" : "ghost"} className="w-full justify-start gap-3 rounded-xl px-4">
+                  <Gift className="w-5 h-5" /> Rewards
+                </Button>
+              </Link>
+            </nav>
+          </div>
 
           <div className="mt-8 pt-8 border-t border-border/40">
             <h4 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">My Activity</h4>
