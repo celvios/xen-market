@@ -3,7 +3,7 @@ import { Search, Bell, Menu, User, Wallet, LogOut, Trophy, Activity, Gift } from
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CATEGORIES } from "@/lib/mock-data";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import xenLogo from "@assets/generated_images/minimalist_abstract_x_logo_for_xen_markets.png";
 import { useStore } from "@/lib/store";
