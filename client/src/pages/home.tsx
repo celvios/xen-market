@@ -109,7 +109,13 @@ export default function Home() {
             <Button 
               size="lg" 
               className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 font-semibold text-md shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:shadow-[0_0_30px_rgba(0,229,255,0.5)] transition-all"
-              onClick={login}
+              onClick={() => {
+                if (user.isLoggedIn) {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                  login();
+                }
+              }}
               data-testid="button-get-started"
             >
               {user.isLoggedIn ? "Start Trading" : "Get Started Now"}
