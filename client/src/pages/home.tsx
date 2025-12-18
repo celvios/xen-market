@@ -6,10 +6,12 @@ import { ArrowRight, Flame, Sparkles, FilterX, Loader2 } from "lucide-react";
 import { useRoute, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { fetchMarkets, type Market } from "@/lib/api";
+import { useStore } from "@/lib/store";
 
 export default function Home() {
   const [match, params] = useRoute("/markets/:category");
   const categoryId = params?.category;
+  const { user, login } = useStore();
   
   const { data: markets = [], isLoading } = useQuery({
     queryKey: ["markets"],
@@ -104,8 +106,13 @@ export default function Home() {
             <p className="text-muted-foreground mb-8 text-lg">
               Join the world's most transparent prediction market. Trade with USDC, earn rewards, and hedge against real-world events.
             </p>
-            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 font-semibold text-md shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:shadow-[0_0_30px_rgba(0,229,255,0.5)] transition-all">
-              Get Started Now
+            <Button 
+              size="lg" 
+              className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 font-semibold text-md shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:shadow-[0_0_30px_rgba(0,229,255,0.5)] transition-all"
+              onClick={login}
+              data-testid="button-get-started"
+            >
+              {user.isLoggedIn ? "Start Trading" : "Get Started Now"}
             </Button>
           </div>
         </section>
