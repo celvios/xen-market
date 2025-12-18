@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertTradeSchema, insertPositionSchema } from "@shared/schema";
 import { z } from "zod";
+import { sql } from "drizzle-orm";
 import fs from "fs";
 import path from "path";
 import { getWebSocketService } from "./websocket";
@@ -35,12 +36,87 @@ export async function registerRoutes(
   // Database migration endpoint
   app.get("/api/admin/migrate", async (req, res) => {
     try {
-      const { execSync } = await import("child_process");
-      execSync("npm run db:push", { stdio: "inherit" });
+      const { db } = await import("./db");
+      if (!db) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+      
+      await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS users (
+          id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+          wallet_address TEXT UNIQUE,
+          username TEXT UNIQUE,
+          balance DECIMAL(10,2) NOT NULL DEFAULT 1000.00,
+          created_at TIMESTAMP DEFAULT NOW() NOT NULL
+        );
+        
+        CREATE TABLE IF NOT EXISTS markets (
+          id SERIAL PRIMARY KEY,
+          title TEXT NOT NULL,
+          description TEXT,
+          image TEXT NOT NULL,
+          category TEXT NOT NULL,
+          end_date TEXT NOT NULL,
+          volume DECIMAL(12,2) NOT NULL DEFAULT 0,
+          is_featured BOOLEAN DEFAULT false,
+          is_resolved BOOLEAN DEFAULT false,
+          resolved_outcome_id INTEGER,
+          condition_id TEXT,
+          question_id TEXT,
+          tx_hash TEXT,
+          created_at TIMESTAMP DEFAULT NOW() NOT NULL
+        );
+        
+        CREATE TABLE IF NOT EXISTS outcomes (
+          id SERIAL PRIMARY KEY,
+          market_id INTEGER NOT NULL REFERENCES markets(id) ON DELETE CASCADE,
+          label TEXT NOT NULL,
+          probability DECIMAL(5,2) NOT NULL,
+          color TEXT NOT NULL
+        );
+        
+        CREATE TABLE IF NOT EXISTS positions (
+          id SERIAL PRIMARY KEY,
+          user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          market_id INTEGER NOT NULL REFERENCES markets(id) ON DELETE CASCADE,
+          outcome_id INTEGER NOT NULL REFERENCES outcomes(id) ON DELETE CASCADE,
+          shares DECIMAL(10,2) NOT NULL,
+          avg_price DECIMAL(5,4) NOT NULL,
+          created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+          updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+        );
+        
+        CREATE TABLE IF NOT EXISTS trades (
+          id SERIAL PRIMARY KEY,
+          user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          market_id INTEGER NOT NULL REFERENCES markets(id) ON DELETE CASCADE,
+          outcome_id INTEGER NOT NULL REFERENCES outcomes(id) ON DELETE CASCADE,
+          type TEXT NOT NULL,
+          shares DECIMAL(10,2) NOT NULL,
+          price DECIMAL(5,4) NOT NULL,
+          total_amount DECIMAL(10,2) NOT NULL,
+          created_at TIMESTAMP DEFAULT NOW() NOT NULL
+        );
+        
+        CREATE TABLE IF NOT EXISTS orders (
+          id SERIAL PRIMARY KEY,
+          market_id INTEGER NOT NULL REFERENCES markets(id) ON DELETE CASCADE,
+          user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          outcome_id INTEGER NOT NULL REFERENCES outcomes(id) ON DELETE CASCADE,
+          side TEXT NOT NULL,
+          price DECIMAL(5,4) NOT NULL,
+          size DECIMAL(10,2) NOT NULL,
+          filled_size DECIMAL(10,2) NOT NULL DEFAULT 0,
+          status TEXT NOT NULL DEFAULT 'open',
+          tx_hash TEXT,
+          created_at TIMESTAMP DEFAULT NOW() NOT NULL
+        );
+      `);
+      
       res.json({ success: true, message: "Database migrated successfully" });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Migration error:", error);
-      res.status(500).json({ error: "Migration failed" });
+      res.status(500).json({ error: error.message || "Migration failed" });
     }
   });
 
