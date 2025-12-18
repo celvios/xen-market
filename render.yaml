@@ -3,7 +3,7 @@ services:
     name: xen-markets-api
     env: node
     plan: starter
-    buildCommand: npm install --legacy-peer-deps && node_modules/.bin/tsx script/build.ts
+    buildCommand: npm install --legacy-peer-deps && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
