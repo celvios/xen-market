@@ -33,7 +33,7 @@ export async function registerRoutes(
   });
 
   // Database migration endpoint
-  app.post("/api/admin/migrate", async (req, res) => {
+  app.get("/api/admin/migrate", async (req, res) => {
     try {
       const { execSync } = await import("child_process");
       execSync("npm run db:push", { stdio: "inherit" });
@@ -45,7 +45,7 @@ export async function registerRoutes(
   });
 
   // Seed database endpoint
-  app.post("/api/admin/seed", async (req, res) => {
+  app.get("/api/admin/seed", async (req, res) => {
     try {
       const { seedDatabase } = await import("./seed");
       await seedDatabase();
