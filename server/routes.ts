@@ -32,6 +32,30 @@ export async function registerRoutes(
     res.json({ status: "ok" });
   });
 
+  // Database migration endpoint
+  app.post("/api/admin/migrate", async (req, res) => {
+    try {
+      const { execSync } = await import("child_process");
+      execSync("npm run db:push", { stdio: "inherit" });
+      res.json({ success: true, message: "Database migrated successfully" });
+    } catch (error) {
+      console.error("Migration error:", error);
+      res.status(500).json({ error: "Migration failed" });
+    }
+  });
+
+  // Seed database endpoint
+  app.post("/api/admin/seed", async (req, res) => {
+    try {
+      const { seedDatabase } = await import("./seed");
+      await seedDatabase();
+      res.json({ success: true, message: "Database seeded successfully" });
+    } catch (error) {
+      console.error("Seed error:", error);
+      res.status(500).json({ error: "Seeding failed" });
+    }
+  });
+
   // ===== MARKETS ROUTES =====
 
   // Get all markets
