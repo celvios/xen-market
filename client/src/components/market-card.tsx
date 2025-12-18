@@ -24,84 +24,84 @@ export default function MarketCard({ market, featured = false }: MarketCardProps
   return (
     <Link href={`/market/${market.id}`}>
       <Card className={cn(
-        "group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 border-border/50 hover:border-primary/20 bg-card cursor-pointer",
-        featured ? "col-span-1 md:col-span-2 lg:col-span-3 flex flex-col md:flex-row" : "flex flex-col"
+        "group relative overflow-hidden transition-all duration-300 border border-border bg-card/60 hover:bg-card/80 flex flex-col cursor-pointer glass-panel overflow-hidden",
+        featured && "md:col-span-2 lg:col-span-3 border-primary/20 bg-primary/5"
       )}>
-        {/* Image Section */}
-        <div className={cn(
-          "relative overflow-hidden",
-          featured ? "w-full md:w-1/3 min-h-[200px]" : "w-full h-32"
-        )}>
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent z-10" />
-          <img 
-            src={market.image} 
-            alt={market.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-          />
-          <div className="absolute top-2 right-2 z-20">
-            <Badge variant="secondary" className="backdrop-blur-md bg-background/50 hover:bg-background/80 border-none text-xs font-medium">
-              {market.category}
-            </Badge>
+        {/* Subtle Ambient Background */}
+        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl pointer-events-none group-hover:bg-primary/10 transition-colors" />
+
+        <div className="p-4 md:p-5 flex flex-col flex-1 h-full">
+          {/* Header Area */}
+          <div className="flex items-start gap-4 mb-4">
+            <div className="relative flex-shrink-0">
+              <div className="w-12 h-12 rounded-lg bg-muted/50 border border-border/50 overflow-hidden relative shadow-inner">
+                <img
+                  src={market.image}
+                  alt={market.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent" />
+              </div>
+              <Badge className="absolute -bottom-2 -right-2 text-[8px] h-4 px-1 backdrop-blur-md bg-background/80 border-border/50 shadow-lg text-muted-foreground uppercase tracking-widest leading-none">
+                {market.category}
+              </Badge>
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <h3 className={cn(
+                "font-display font-bold leading-[1.3] text-foreground transition-colors group-hover:text-primary",
+                featured ? "text-xl md:text-2xl" : "text-[15px] line-clamp-2"
+              )}>
+                {market.title}
+              </h3>
+            </div>
           </div>
-        </div>
 
-        {/* Content Section */}
-        <div className="flex-1 flex flex-col p-4 md:p-5">
-          <div className="flex-1">
-            <h3 className={cn(
-              "font-display font-semibold leading-tight mb-4 group-hover:text-primary transition-colors",
-              featured ? "text-2xl md:text-3xl" : "text-lg line-clamp-2"
-            )}>
-              {market.title}
-            </h3>
-
-            {/* Outcomes */}
-            <div className="space-y-3 mb-4">
-              {market.outcomes.map((outcome) => (
-                <div key={outcome.id} className="relative group/bar">
-                  <div className="flex items-center justify-between text-sm mb-1 z-10 relative">
-                    <span className="font-medium text-muted-foreground group-hover/bar:text-foreground transition-colors">
-                      {outcome.label}
-                    </span>
-                    <span className={cn(
-                      "font-bold font-mono",
-                      parseFloat(outcome.probability) > 50 ? "text-primary" : "text-foreground"
-                    )}>
-                      {parseFloat(outcome.probability).toFixed(0)}%
+          {/* Outcomes Data Grid */}
+          <div className="space-y-2 mb-4 flex-1">
+            {market.outcomes.slice(0, 2).map((outcome) => {
+              const prob = parseFloat(outcome.probability);
+              const isLead = prob > 50;
+              return (
+                <div key={outcome.id} className="group/row">
+                  <div className="flex items-center justify-between text-[11px] mb-1.5 uppercase font-bold tracking-wider text-muted-foreground transition-colors group-hover/row:text-foreground">
+                    <span>{outcome.label}</span>
+                    <span className={cn("font-mono", isLead ? "text-success drop-shadow-[0_0_5px_rgba(34,197,94,0.3)]" : "text-foreground")}>
+                      {prob.toFixed(0)}%
                     </span>
                   </div>
-                  {/* Progress Bar Container */}
-                  <div className="h-2 w-full bg-muted/50 rounded-full overflow-hidden relative">
-                    <div 
-                      className={cn("h-full rounded-full transition-all duration-500 ease-out", outcome.color)}
-                      style={{ width: `${parseFloat(outcome.probability)}%` }}
+                  <div className="h-1.5 w-full bg-border/30 rounded-full overflow-hidden relative shadow-inner">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all duration-700 ease-in-out relative",
+                        outcome.color === "bg-green-500" ? "bg-success" : (outcome.color === "bg-red-500" ? "bg-destructive" : outcome.color)
+                      )}
+                      style={{
+                        width: `${prob}%`,
+                        boxShadow: isLead ? '0 0 8px currentColor' : 'none'
+                      }}
                     />
-                    {/* Glowing effect for leader */}
-                    {parseFloat(outcome.probability) > 50 && (
-                      <div 
-                        className={cn("absolute top-0 bottom-0 right-0 w-4 blur-sm bg-white/50", outcome.color)} 
-                        style={{ left: `${parseFloat(outcome.probability)}%`, transform: 'translateX(-50%)' }}
-                      />
-                    )}
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
 
-          {/* Footer */}
-          <div className="flex items-center justify-between pt-4 border-t border-border/30 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <BarChart3 className="w-3.5 h-3.5" />
-              <span className="font-mono">{formatVolume(market.volume)} Vol.</span>
-            </div>
-            <div className="flex items-center gap-3">
-               <div className="flex items-center gap-1 hover:text-foreground transition-colors">
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>{Math.floor(Math.random() * 100)}</span>
+          {/* Market Stats Footer */}
+          <div className="pt-3 border-t border-border/30 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-1.5">
+              <div className="w-6 h-6 rounded-md bg-muted/30 border border-border/50 flex items-center justify-center">
+                <BarChart3 className="w-3 h-3 text-muted-foreground" />
               </div>
-               <span className="text-muted-foreground/50">•</span>
-               <span>Ends {market.endDate}</span>
+              <div className="flex flex-col">
+                <span className="text-[9px] uppercase font-black tracking-tighter text-muted-foreground leading-none mb-0.5">Vol</span>
+                <span className="text-[11px] font-mono font-bold text-foreground leading-none">{formatVolume(market.volume)}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-end">
+              <span className="text-[9px] uppercase font-black tracking-tighter text-muted-foreground leading-none mb-0.5">Ends In</span>
+              <span className="text-[11px] font-mono font-bold text-muted-foreground leading-none">{market.endDate}</span>
             </div>
           </div>
         </div>
@@ -109,3 +109,4 @@ export default function MarketCard({ market, featured = false }: MarketCardProps
     </Link>
   );
 }
+

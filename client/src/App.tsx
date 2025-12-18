@@ -10,6 +10,9 @@ import Portfolio from "@/pages/portfolio";
 import Rewards from "@/pages/rewards";
 import Activity from "@/pages/activity";
 import Leaderboard from "@/pages/leaderboard";
+import CreateMarket from "@/pages/create-market";
+import Analytics from "@/pages/analytics";
+import ComplexMarketsDemo from "@/pages/complex-markets-demo";
 import { StoreProvider } from "@/lib/store";
 
 function Router() {
@@ -21,26 +24,32 @@ function Router() {
       <Route path="/rewards" component={Rewards} />
       <Route path="/activity" component={Activity} />
       <Route path="/leaderboard" component={Leaderboard} />
-      {/* Category route re-uses Home but we can handle params inside Home if we update it, 
-          or just filter inside Home with query params. 
-          For now, Home handles 'all', let's stick to Home for simplicity or add a specific route if needed. 
-      */}
-      <Route path="/markets/:category" component={Home} /> 
+      <Route path="/create" component={CreateMarket} />
+      <Route path="/analytics" component={Analytics} />
+      <Route path="/complex-markets" component={ComplexMarketsDemo} />
+      <Route path="/markets/:category" component={Home} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
+import { Web3Provider } from "@/components/providers/Web3Provider";
+import { ErrorBoundary } from "@/components/error-boundary";
+
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <StoreProvider>
-        <TooltipProvider>
-          <Router />
-          <Toaster />
-        </TooltipProvider>
-      </StoreProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <Web3Provider>
+          <StoreProvider>
+            <TooltipProvider>
+              <Router />
+              <Toaster />
+            </TooltipProvider>
+          </StoreProvider>
+        </Web3Provider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

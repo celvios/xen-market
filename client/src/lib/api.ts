@@ -1,5 +1,7 @@
 // API client functions
-const API_URL = "/api";
+import { config } from './config';
+
+const API_URL = `${config.apiUrl}/api`;
 
 export interface Market {
   id: number;

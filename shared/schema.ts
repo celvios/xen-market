@@ -28,6 +28,9 @@ export const markets = pgTable("markets", {
   isFeatured: boolean("is_featured").default(false),
   isResolved: boolean("is_resolved").default(false),
   resolvedOutcomeId: integer("resolved_outcome_id"),
+  conditionId: text("condition_id"),
+  questionId: text("question_id"),
+  txHash: text("tx_hash"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -80,3 +83,22 @@ export const trades = pgTable("trades", {
 export const insertTradeSchema = createInsertSchema(trades).omit({ id: true, createdAt: true });
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
 export type Trade = typeof trades.$inferSelect;
+
+// Orders table
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  marketId: integer("market_id").notNull().references(() => markets.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  outcomeId: integer("outcome_id").notNull().references(() => outcomes.id, { onDelete: "cascade" }),
+  side: text("side").notNull(), // 'buy' or 'sell'
+  price: decimal("price", { precision: 5, scale: 4 }).notNull(),
+  size: decimal("size", { precision: 10, scale: 2 }).notNull(),
+  filledSize: decimal("filled_size", { precision: 10, scale: 2 }).notNull().default("0"),
+  status: text("status").notNull().default("open"), // 'open', 'filled', 'cancelled'
+  txHash: text("tx_hash"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, createdAt: true });
+export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type Order = typeof orders.$inferSelect;

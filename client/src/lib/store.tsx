@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { authenticateWallet, fetchUser, type User } from "./api";
+import { useAccount, useBalance } from "wagmi";
 
 interface UserState {
   id: string | null;
@@ -11,7 +12,6 @@ interface UserState {
 
 interface StoreContextType {
   user: UserState;
-  login: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -19,6 +19,9 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
+  const { address, isConnected } = useAccount();
+  const { data: balanceData } = useBalance({ address });
+
   const [user, setUser] = useState<UserState>({
     id: null,
     balance: 0,
@@ -26,36 +29,41 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     walletAddress: null,
   });
 
-  const login = async () => {
-    try {
-      // Generate a mock wallet address for demo
-      const mockWallet = `0x${Math.random().toString(16).slice(2, 10)}${Math.random().toString(16).slice(2, 10)}`;
-      
-      const userData = await authenticateWallet(mockWallet);
-      
-      setUser({
-        id: userData.id,
-        balance: parseFloat(userData.balance),
-        isLoggedIn: true,
-        walletAddress: userData.walletAddress,
-      });
+  useEffect(() => {
+    const syncUser = async () => {
+      if (isConnected && address) {
+        try {
+          const userData = await authenticateWallet(address);
+          setUser({
+            id: userData.id,
+            balance: parseFloat(userData.balance),
+            isLoggedIn: true,
+            walletAddress: userData.walletAddress,
+          });
 
-      toast({
-        title: "Wallet Connected",
-        description: "You've successfully connected your wallet.",
-      });
-    } catch (error) {
-      toast({
-        title: "Connection Failed",
-        description: "Failed to connect wallet. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+          toast({
+            title: "Wallet Connected",
+            description: `Logged in as ${address.slice(0, 6)}...${address.slice(-4)}`,
+          });
+        } catch (error) {
+          console.error("Auth failed:", error);
+        }
+      } else {
+        setUser({
+          id: null,
+          balance: 0,
+          isLoggedIn: false,
+          walletAddress: null,
+        });
+      }
+    };
+
+    syncUser();
+  }, [isConnected, address, toast]);
 
   const refreshUser = async () => {
     if (!user.id) return;
-    
+
     try {
       const userData = await fetchUser(user.id);
       setUser(prev => ({
@@ -68,7 +76,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <StoreContext.Provider value={{ user, login, refreshUser }}>
+    <StoreContext.Provider value={{ user, refreshUser }}>
       {children}
     </StoreContext.Provider>
   );

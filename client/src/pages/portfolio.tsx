@@ -6,6 +6,7 @@ import { Link } from "wouter";
 import { ArrowUpRight, TrendingUp, Wallet, PieChart, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPortfolio } from "@/lib/api";
+import { PnLCalculator } from "@/components/pnl-calculator";
 
 export default function Portfolio() {
   const { user, login } = useStore();
@@ -91,6 +92,9 @@ export default function Portfolio() {
           </Card>
         </div>
 
+        {/* P&L Calculator */}
+        {positions.length > 0 && <PnLCalculator positions={positions} />}
+
         {/* Positions Table */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Active Positions</h2>
@@ -138,7 +142,7 @@ export default function Portfolio() {
                         </div>
                         <div>
                           <div className="text-muted-foreground text-xs uppercase">Avg Price</div>
-                          <div className="font-mono">{pos.avgPrice.toFixed(2)}¢</div>
+                          <div className="font-mono">{parseFloat(pos.avgPrice).toFixed(2)}¢</div>
                         </div>
                         <div>
                           <div className="text-muted-foreground text-xs uppercase">Value</div>
