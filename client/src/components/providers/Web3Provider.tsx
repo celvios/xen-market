@@ -1,43 +1,25 @@
-import { createAppKit } from '@reown/appkit/react'
-import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
-import { WagmiProvider } from 'wagmi'
-import { hardhat, polygon } from 'wagmi/chains'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClient } from '@/lib/queryClient'
+import '@rainbow-me/rainbowkit/styles.css';
+import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { WagmiProvider } from 'wagmi';
+import { hardhat, polygon } from 'wagmi/chains';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
 
-const projectId = '9945df869a89d702d7e974e7fc533383'
-
-const metadata = {
-  name: 'Xen Markets',
-  description: 'Decentralized Prediction Markets',
-  url: 'https://xenmarkets.com',
-  icons: ['https://avatars.githubusercontent.com/u/37784886']
-}
-
-const chains = [hardhat, polygon] as const
-
-const wagmiAdapter = new WagmiAdapter({
-  networks: chains,
-  projectId,
-  ssr: false
-})
-
-createAppKit({
-  adapters: [wagmiAdapter],
-  networks: chains,
-  metadata,
-  projectId,
-  features: {
-    analytics: true
-  }
-})
+const config = getDefaultConfig({
+  appName: 'Xen Markets',
+  projectId: '9945df869a89d702d7e974e7fc533383',
+  chains: [hardhat, polygon],
+  ssr: false,
+});
 
 export function Web3Provider({ children }: { children: React.ReactNode }) {
   return (
-    <WagmiProvider config={wagmiAdapter.wagmiConfig}>
+    <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <RainbowKitProvider>
+          {children}
+        </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
-  )
+  );
 }
