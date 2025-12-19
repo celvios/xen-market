@@ -244,9 +244,8 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {
-              <div>
-                <Label>Outcomes</Label>
+            <div>
+              <Label>Outcomes</Label>
                 <div className="space-y-2">
                   {marketForm.outcomes.map((outcome, index) => (
                     <div key={index} className="flex gap-2">
@@ -291,7 +290,7 @@ export default function AdminPage() {
                   )}
                 </div>
               </div>
-            )}
+            </div>
 
             <Button
               onClick={handleCreateMarket}
