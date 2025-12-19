@@ -101,9 +101,11 @@ export class DatabaseStorage implements IStorage {
   async createMarket(market: InsertMarket, marketOutcomes: InsertOutcome[]): Promise<Market> {
     const result = await db.insert(markets).values(market).returning();
     const createdMarket = result[0];
-    await db.insert(outcomes).values(
-      marketOutcomes.map(outcome => ({ ...outcome, marketId: createdMarket.id }))
-    );
+    if (marketOutcomes.length > 0) {
+      await db.insert(outcomes).values(
+        marketOutcomes.map(outcome => ({ ...outcome, marketId: createdMarket.id }))
+      );
+    }
     return createdMarket;
   }
 
