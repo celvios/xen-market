@@ -143,6 +143,14 @@ export async function registerRoutes(
       let markets = await cacheService.get(cacheKey);
       if (!markets) {
         markets = await storage.getAllMarkets();
+        
+        // Calculate real volume from trades
+        markets = await Promise.all(markets.map(async (market) => {
+          const trades = await storage.getMarketTrades(market.id);
+          const volume = trades.reduce((sum, trade) => sum + parseFloat(trade.totalAmount), 0);
+          return { ...market, volume: volume.toFixed(2) };
+        }));
+        
         await cacheService.set(cacheKey, markets, 60); // Cache for 1 minute
       }
       
@@ -236,16 +244,50 @@ export async function registerRoutes(
       const marketId = parseInt(req.params.id);
       const trades = await storage.getMarketTrades(marketId);
       
+      if (trades.length === 0) {
+        return res.json([]);
+      }
+      
       // Generate price history from trades
-      const priceHistory = trades.map(trade => ({
-        timestamp: trade.createdAt,
-        price: parseFloat(trade.price),
-        volume: parseFloat(trade.totalAmount)
-      }));
+      const priceHistory = trades
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        .map(trade => ({
+          timestamp: trade.createdAt,
+          price: parseFloat(trade.price) * 100, // Convert to cents
+          volume: parseFloat(trade.totalAmount)
+        }));
       
       res.json(priceHistory);
     } catch (error) {
       console.error("Error fetching price history:", error);
+      res.status(500).json({ error: "Failed to fetch price history" });
+    }
+  });
+
+  // Get outcome-specific price history
+  app.get("/api/markets/:marketId/outcomes/:outcomeId/price-history", async (req, res) => {
+    try {
+      const marketId = parseInt(req.params.marketId);
+      const outcomeId = parseInt(req.params.outcomeId);
+      const trades = await storage.getMarketTrades(marketId);
+      
+      const outcomeTrades = trades.filter(t => t.outcomeId === outcomeId);
+      
+      if (outcomeTrades.length === 0) {
+        return res.json([]);
+      }
+      
+      const priceHistory = outcomeTrades
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        .map(trade => ({
+          timestamp: trade.createdAt,
+          price: parseFloat(trade.price) * 100,
+          volume: parseFloat(trade.totalAmount)
+        }));
+      
+      res.json(priceHistory);
+    } catch (error) {
+      console.error("Error fetching outcome price history:", error);
       res.status(500).json({ error: "Failed to fetch price history" });
     }
   });
