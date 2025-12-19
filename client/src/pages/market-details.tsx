@@ -223,6 +223,28 @@ export default function MarketDetails() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           {/* Left Column: Chart & Info */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Outcome Selector */}
+            <Card className="p-4 bg-card/40 border-border glass-panel">
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground mb-4">Select Outcome</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {market.outcomes.map((outcome) => (
+                  <button
+                    key={outcome.id}
+                    onClick={() => setSelectedOutcome(outcome.id)}
+                    className={cn(
+                      "p-4 rounded-xl border-2 transition-all font-bold text-left",
+                      selectedOutcome === outcome.id || (!selectedOutcome && outcome.id === market.outcomes[0].id)
+                        ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                        : "border-border bg-muted/20 hover:border-primary/50"
+                    )}
+                  >
+                    <div className="text-sm text-muted-foreground mb-1">{outcome.label}</div>
+                    <div className="text-2xl font-mono font-black">{outcome.probability}¢</div>
+                  </button>
+                ))}
+              </div>
+            </Card>
+            
             {/* Price Chart */}
             <PriceChart marketId={market.id} />
             
@@ -258,8 +280,8 @@ export default function MarketDetails() {
               <CardContent className="p-6">
                 <Tabs defaultValue="buy" className="w-full">
                   <TabsList className="w-full grid grid-cols-2 mb-6 bg-background/50 border border-border p-1 h-12">
-                    <TabsTrigger value="buy" className="font-bold uppercase tracking-widest text-xs data-[state=active]:bg-success data-[state=active]:text-success-foreground">Buy</TabsTrigger>
-                    <TabsTrigger value="sell" className="font-bold uppercase tracking-widest text-xs data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground">Sell</TabsTrigger>
+                    <TabsTrigger value="buy" className="font-bold uppercase tracking-widest text-xs data-[state=active]:bg-[#10b981] data-[state=active]:text-white">Buy</TabsTrigger>
+                    <TabsTrigger value="sell" className="font-bold uppercase tracking-widest text-xs data-[state=active]:bg-[#ef4444] data-[state=active]:text-white">Sell</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="buy" className="space-y-6">
@@ -317,7 +339,7 @@ export default function MarketDetails() {
                     )}
 
                     <Button
-                      className="w-full font-black text-sm uppercase tracking-[0.2em] h-14 bg-success hover:bg-success/90 text-success-foreground shadow-lg shadow-success/20"
+                      className="w-full font-black text-sm uppercase tracking-[0.2em] h-14 bg-[#10b981] hover:bg-[#10b981]/90 text-white shadow-lg shadow-[#10b981]/20"
                       onClick={handleBuy}
                       disabled={!amount || parseFloat(amount) <= 0 || isTransacting}
                     >

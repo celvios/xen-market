@@ -99,7 +99,7 @@ export function PriceChart({ marketId }: PriceChartProps) {
   }
 
   return (
-    <Card className="border-none bg-white dark:bg-zinc-950 shadow-none overflow-hidden group p-4">
+    <Card className="border-none bg-transparent shadow-none overflow-hidden group p-4">
       <CardHeader className="flex flex-row items-baseline justify-start space-y-0 pb-8 px-0">
         <div className="flex items-baseline gap-4">
           <span className="text-5xl font-sans font-bold tracking-tight text-foreground">
