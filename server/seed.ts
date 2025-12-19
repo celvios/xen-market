@@ -74,7 +74,8 @@ export async function seedDatabase() {
   return { message: "Seeded successfully" };
 }
 
-if (require.main === module) {
+// Only run if executed directly (not imported)
+if (import.meta.url === `file://${process.argv[1]}`) {
   seedDatabase().then(() => process.exit(0)).catch((err) => {
     console.error(err);
     process.exit(1);

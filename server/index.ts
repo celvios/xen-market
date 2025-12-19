@@ -93,8 +93,13 @@ initWebSocket(httpServer);
 log("WebSocket server initialized");
 
 // Start indexer in all environments
-indexer.start().catch(err => console.error("Indexer failed to start:", err));
-log("Blockchain indexer started");
+log("Starting blockchain indexer...");
+indexer.start()
+  .then(() => log("Blockchain indexer started successfully"))
+  .catch(err => {
+    console.error("Indexer failed to start:", err);
+    log("Indexer start failed - will retry in background");
+  });
 
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   const status = err.status || err.statusCode || 500;
