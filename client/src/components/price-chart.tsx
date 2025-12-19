@@ -110,23 +110,23 @@ export function PriceChart({ marketId, outcomeId }: PriceChartProps) {
   }
 
   return (
-    <Card className="border-none bg-transparent shadow-none overflow-hidden group p-4">
-      <CardHeader className="flex flex-row items-baseline justify-start space-y-0 pb-8 px-0">
-        <div className="flex items-baseline gap-4">
-          <span className="text-5xl font-sans font-bold tracking-tight text-foreground">
+    <Card className="border-none bg-transparent shadow-none overflow-hidden group p-2 md:p-4">
+      <CardHeader className="flex flex-col md:flex-row items-start md:items-baseline justify-start space-y-2 md:space-y-0 pb-4 md:pb-8 px-0">
+        <div className="flex flex-col md:flex-row items-start md:items-baseline gap-2 md:gap-4 w-full">
+          <span className="text-3xl md:text-5xl font-sans font-bold tracking-tight text-foreground">
             ${stats?.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
-          <div className={`flex items-center gap-1.5 font-sans font-semibold text-lg ${stats && stats.change >= 0 ? 'text-[#10b981]' : 'text-destructive'}`}>
-            {stats && stats.change >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+          <div className={`flex items-center gap-1.5 font-sans font-semibold text-base md:text-lg ${stats && stats.change >= 0 ? 'text-[#10b981]' : 'text-destructive'}`}>
+            {stats && stats.change >= 0 ? <TrendingUp className="w-4 h-4 md:w-5 md:h-5" /> : <TrendingDown className="w-4 h-4 md:w-5 md:h-5" />}
             ${Math.abs(stats?.change || 0).toFixed(2)} ({stats?.changePercent.toFixed(2)}%)
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="p-0">
-        <div className="h-[400px] w-full relative">
+        <div className="h-[250px] md:h-[400px] w-full relative">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={priceData} margin={{ top: 40, right: 10, left: 10, bottom: 20 }}>
+            <AreaChart data={priceData} margin={{ top: 20, right: 5, left: 0, bottom: 10 }}>
               <defs>
                 <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />

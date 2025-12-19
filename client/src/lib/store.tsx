@@ -29,6 +29,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     walletAddress: null,
   });
 
+  const [hasShownToast, setHasShownToast] = useState(false);
+
   useEffect(() => {
     const syncUser = async () => {
       if (isConnected && address) {
@@ -41,10 +43,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             walletAddress: userData.walletAddress,
           });
 
-          toast({
-            title: "Wallet Connected",
-            description: `Logged in as ${address.slice(0, 6)}...${address.slice(-4)}`,
-          });
+          // Only show toast on first connection, not on reload
+          if (!hasShownToast) {
+            toast({
+              title: "Wallet Connected",
+              description: `Logged in as ${address.slice(0, 6)}...${address.slice(-4)}`,
+            });
+            setHasShownToast(true);
+          }
         } catch (error) {
           console.error("Auth failed:", error);
         }
@@ -55,11 +61,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           isLoggedIn: false,
           walletAddress: null,
         });
+        setHasShownToast(false);
       }
     };
 
     syncUser();
-  }, [isConnected, address, toast]);
+  }, [isConnected, address, toast, hasShownToast]);
 
   const refreshUser = async () => {
     if (!user.id) return;
