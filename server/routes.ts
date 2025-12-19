@@ -160,6 +160,28 @@ export async function registerRoutes(
     }
   });
 
+  // Clear all data endpoint
+  app.get("/api/admin/clear-data", async (req, res) => {
+    try {
+      const { db } = await import("./db");
+      if (!db) {
+        return res.status(500).json({ error: "Database not configured" });
+      }
+      
+      await db.execute(sql`
+        DELETE FROM trades;
+        DELETE FROM positions;
+        DELETE FROM orders;
+        UPDATE users SET balance = '0.00';
+      `);
+      
+      res.json({ success: true, message: "All trades, positions, orders cleared and balances reset" });
+    } catch (error: any) {
+      console.error("Clear data error:", error);
+      res.status(500).json({ error: error.message || "Failed to clear data" });
+    }
+  });
+
   // Seed database endpoint
   app.get("/api/admin/seed", async (req, res) => {
     try {

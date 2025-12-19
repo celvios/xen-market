@@ -85,10 +85,7 @@ export default function MarketCard({ market, featured = false }: MarketCardProps
                   </span>
                   <div className="flex gap-1">
                     <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] font-black uppercase tracking-tighter bg-success/10 text-success hover:bg-success hover:text-success-foreground border-none">
-                      Yes
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] font-black uppercase tracking-tighter bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground border-none">
-                      No
+                      {parseFloat(outcome.probability).toFixed(0)}¢
                     </Button>
                   </div>
                 </div>
