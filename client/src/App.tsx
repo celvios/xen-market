@@ -13,6 +13,7 @@ import Leaderboard from "@/pages/leaderboard";
 import CreateMarket from "@/pages/create-market";
 import Analytics from "@/pages/analytics";
 import ComplexMarketsDemo from "@/pages/complex-markets-demo";
+import AdminPage from "@/pages/admin";
 import { StoreProvider } from "@/lib/store";
 
 function Router() {
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/create" component={CreateMarket} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/complex-markets" component={ComplexMarketsDemo} />
+      <Route path="/admin" component={AdminPage} />
       <Route path="/markets/:category" component={Home} />
       <Route component={NotFound} />
     </Switch>
