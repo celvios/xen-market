@@ -314,7 +314,7 @@ export async function registerRoutes(
         user = await storage.createUser({
           walletAddress,
           username: `user_${walletAddress.slice(0, 6)}`,
-          balance: "1000.00"
+          balance: "0.00"
         });
       }
 

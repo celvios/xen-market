@@ -1,7 +1,7 @@
 import Layout from "@/components/layout";
 import MarketCard from "@/components/market-card";
 import { ComplexMarketCard } from "@/components/complex-market-card";
-import { MarketTypeFilter } from "@/components/market-type-filter";
+
 import { CATEGORIES } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Flame, Sparkles, FilterX, Loader2, Zap } from "lucide-react";
@@ -17,7 +17,7 @@ export default function Home() {
   const categoryId = params?.category;
   const { user } = useStore();
   const { openConnectModal } = useConnectModal();
-  const [selectedMarketType, setSelectedMarketType] = useState("all");
+
 
   const { data: markets = [], isLoading } = useQuery({
     queryKey: ["markets"],
@@ -25,25 +25,9 @@ export default function Home() {
   });
 
   // Filter logic
-  let filteredMarkets = categoryId
+  const filteredMarkets = categoryId
     ? markets.filter((m: Market) => m.category.toLowerCase().replace(" ", "-") === categoryId || m.category.toLowerCase() === categoryId)
     : markets;
-
-  // Add market type filtering
-  if (selectedMarketType !== "all") {
-    filteredMarkets = filteredMarkets.filter((m: any) => {
-      const marketType = m.marketType || "binary"; // Default to binary for existing markets
-      return marketType === selectedMarketType;
-    });
-  }
-
-  // Calculate market type counts
-  const marketTypeCounts = markets.reduce((acc: Record<string, number>, market: any) => {
-    const type = market.marketType || "binary";
-    acc[type] = (acc[type] || 0) + 1;
-    acc.all = (acc.all || 0) + 1;
-    return acc;
-  }, {});
 
   const featuredMarket = filteredMarkets.find((m: Market) => m.isFeatured);
   const otherMarkets = filteredMarkets.filter((m: Market) => m !== featuredMarket);
@@ -89,15 +73,6 @@ export default function Home() {
           <MarketCard market={featuredMarket} featured />
         </section>
       )}
-
-      {/* Market Type Filter */}
-      <section className="mb-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
-        <MarketTypeFilter
-          selectedType={selectedMarketType}
-          onTypeChange={setSelectedMarketType}
-          counts={marketTypeCounts}
-        />
-      </section>
 
       {/* Trending / List Section */}
       <section className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
