@@ -17,16 +17,15 @@ export default function AdminPage() {
     description: "",
     category: "Crypto",
     endDate: "",
+    marketType: "binary",
     outcomes: ["Yes", "No"],
+    scalarRange: { min: 0, max: 100 },
   });
 
-  const categoryOutcomes: Record<string, string[]> = {
-    Crypto: ["Yes", "No"],
-    Politics: ["Democrat", "Republican", "Other"],
-    Sports: ["Team A", "Team B", "Draw"],
-    Tech: ["Yes", "No"],
-    Entertainment: ["Yes", "No"],
-    Other: ["Yes", "No"],
+  const marketTypeOutcomes: Record<string, string[]> = {
+    binary: ["Yes", "No"],
+    categorical: ["Option 1", "Option 2", "Option 3"],
+    scalar: ["Range"],
   };
 
   const handleMigrate = async () => {
@@ -71,7 +70,12 @@ export default function AdminPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...marketForm,
+          title: marketForm.title,
+          description: marketForm.description,
+          category: marketForm.category,
+          endDate: marketForm.endDate,
+          marketType: marketForm.marketType,
+          scalarRange: marketForm.marketType === "scalar" ? marketForm.scalarRange : null,
           outcomes: marketForm.outcomes.map((label, index) => ({
             label,
             probability,
@@ -196,20 +200,33 @@ export default function AdminPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>Market Type</Label>
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={marketForm.marketType}
+                  onChange={(e) => {
+                    const newType = e.target.value;
+                    setMarketForm({
+                      ...marketForm,
+                      marketType: newType,
+                      outcomes: marketTypeOutcomes[newType] || ["Yes", "No"],
+                    });
+                  }}
+                >
+                  <option value="binary">Binary (Yes/No)</option>
+                  <option value="categorical">Categorical (Multiple)</option>
+                  <option value="scalar">Scalar (Range)</option>
+                </select>
+              </div>
+
               <div>
                 <Label>Category</Label>
                 <select
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={marketForm.category}
-                  onChange={(e) => {
-                    const newCategory = e.target.value;
-                    setMarketForm({
-                      ...marketForm,
-                      category: newCategory,
-                      outcomes: categoryOutcomes[newCategory] || ["Yes", "No"],
-                    });
-                  }}
+                  onChange={(e) => setMarketForm({ ...marketForm, category: e.target.value })}
                 >
                   <option value="Crypto">Crypto</option>
                   <option value="Politics">Politics</option>
@@ -230,50 +247,81 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div>
-              <Label>Outcomes</Label>
-              <div className="space-y-2">
-                {marketForm.outcomes.map((outcome, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={outcome}
-                      onChange={(e) => {
-                        const newOutcomes = [...marketForm.outcomes];
-                        newOutcomes[index] = e.target.value;
-                        setMarketForm({ ...marketForm, outcomes: newOutcomes });
-                      }}
-                      placeholder={`Outcome ${index + 1}`}
-                    />
-                    {marketForm.outcomes.length > 2 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const newOutcomes = marketForm.outcomes.filter((_, i) => i !== index);
+            {marketForm.marketType === "scalar" && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Min Value</Label>
+                  <Input
+                    type="number"
+                    value={marketForm.scalarRange.min}
+                    onChange={(e) => setMarketForm({
+                      ...marketForm,
+                      scalarRange: { ...marketForm.scalarRange, min: parseFloat(e.target.value) }
+                    })}
+                  />
+                </div>
+                <div>
+                  <Label>Max Value</Label>
+                  <Input
+                    type="number"
+                    value={marketForm.scalarRange.max}
+                    onChange={(e) => setMarketForm({
+                      ...marketForm,
+                      scalarRange: { ...marketForm.scalarRange, max: parseFloat(e.target.value) }
+                    })}
+                  />
+                </div>
+              </div>
+            )}
+
+            {marketForm.marketType !== "scalar" && (
+              <div>
+                <Label>Outcomes</Label>
+                <div className="space-y-2">
+                  {marketForm.outcomes.map((outcome, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        value={outcome}
+                        onChange={(e) => {
+                          const newOutcomes = [...marketForm.outcomes];
+                          newOutcomes[index] = e.target.value;
                           setMarketForm({ ...marketForm, outcomes: newOutcomes });
                         }}
-                      >
-                        Remove
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setMarketForm({
-                      ...marketForm,
-                      outcomes: [...marketForm.outcomes, `Outcome ${marketForm.outcomes.length + 1}`],
-                    });
-                  }}
-                >
-                  + Add Outcome
-                </Button>
+                        placeholder={`Outcome ${index + 1}`}
+                      />
+                      {marketForm.outcomes.length > 2 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const newOutcomes = marketForm.outcomes.filter((_, i) => i !== index);
+                            setMarketForm({ ...marketForm, outcomes: newOutcomes });
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  {marketForm.marketType === "categorical" && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setMarketForm({
+                          ...marketForm,
+                          outcomes: [...marketForm.outcomes, `Option ${marketForm.outcomes.length + 1}`],
+                        });
+                      }}
+                    >
+                      + Add Outcome
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             <Button
               onClick={handleCreateMarket}
