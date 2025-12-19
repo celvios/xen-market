@@ -8,11 +8,13 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchPortfolio } from "@/lib/api";
 import { PnLCalculator } from "@/components/pnl-calculator";
 import { DepositDialog } from "@/components/deposit-dialog";
+import { WithdrawDialog } from "@/components/withdraw-dialog";
 import { useState } from "react";
 
 export default function Portfolio() {
   const { user, login, refreshUser } = useStore();
   const [depositOpen, setDepositOpen] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
 
   const { data: positions = [], isLoading } = useQuery({
     queryKey: ["portfolio", user.id],
@@ -76,15 +78,25 @@ export default function Portfolio() {
               <div className="text-3xl font-mono font-bold text-foreground" data-testid="text-balance">
                 ${user.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-4 h-8 text-xs w-full" 
-                data-testid="button-deposit"
-                onClick={() => setDepositOpen(true)}
-              >
-                Deposit
-              </Button>
+              <div className="grid grid-cols-2 gap-2 mt-4">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-8 text-xs" 
+                  data-testid="button-deposit"
+                  onClick={() => setDepositOpen(true)}
+                >
+                  Deposit
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-8 text-xs" 
+                  onClick={() => setWithdrawOpen(true)}
+                >
+                  Withdraw
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -171,6 +183,12 @@ export default function Portfolio() {
         <DepositDialog 
           isOpen={depositOpen} 
           onClose={() => setDepositOpen(false)} 
+          onSuccess={refreshUser}
+        />
+        
+        <WithdrawDialog 
+          isOpen={withdrawOpen} 
+          onClose={() => setWithdrawOpen(false)} 
           onSuccess={refreshUser}
         />
       </div>

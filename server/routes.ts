@@ -294,6 +294,61 @@ export async function registerRoutes(
     }
   });
 
+  // Deposit USDC
+  app.post("/api/users/:id/deposit", async (req, res) => {
+    try {
+      const { amount, txHash } = req.body;
+      const userId = req.params.id;
+
+      if (!amount || parseFloat(amount) <= 0) {
+        return res.status(400).json({ error: "Invalid amount" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const newBalance = (parseFloat(user.balance) + parseFloat(amount)).toFixed(2);
+      await storage.updateUserBalance(userId, newBalance);
+
+      res.json({ success: true, newBalance, txHash });
+    } catch (error) {
+      console.error("Error processing deposit:", error);
+      res.status(500).json({ error: "Deposit failed" });
+    }
+  });
+
+  // Withdraw USDC
+  app.post("/api/users/:id/withdraw", async (req, res) => {
+    try {
+      const { amount } = req.body;
+      const userId = req.params.id;
+
+      if (!amount || parseFloat(amount) <= 0) {
+        return res.status(400).json({ error: "Invalid amount" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const currentBalance = parseFloat(user.balance);
+      if (currentBalance < parseFloat(amount)) {
+        return res.status(400).json({ error: "Insufficient balance" });
+      }
+
+      const newBalance = (currentBalance - parseFloat(amount)).toFixed(2);
+      await storage.updateUserBalance(userId, newBalance);
+
+      res.json({ success: true, newBalance });
+    } catch (error) {
+      console.error("Error processing withdrawal:", error);
+      res.status(500).json({ error: "Withdrawal failed" });
+    }
+  });
+
   // ===== TRADING ROUTES =====
 
   // Place order (buy/sell)
