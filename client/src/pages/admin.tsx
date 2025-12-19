@@ -246,49 +246,48 @@ export default function AdminPage() {
 
             <div>
               <Label>Outcomes</Label>
-                <div className="space-y-2">
-                  {marketForm.outcomes.map((outcome, index) => (
-                    <div key={index} className="flex gap-2">
-                      <Input
-                        value={outcome}
-                        onChange={(e) => {
-                          const newOutcomes = [...marketForm.outcomes];
-                          newOutcomes[index] = e.target.value;
+              <div className="space-y-2">
+                {marketForm.outcomes.map((outcome, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={outcome}
+                      onChange={(e) => {
+                        const newOutcomes = [...marketForm.outcomes];
+                        newOutcomes[index] = e.target.value;
+                        setMarketForm({ ...marketForm, outcomes: newOutcomes });
+                      }}
+                      placeholder={`Outcome ${index + 1}`}
+                    />
+                    {marketForm.outcomes.length > 2 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const newOutcomes = marketForm.outcomes.filter((_, i) => i !== index);
                           setMarketForm({ ...marketForm, outcomes: newOutcomes });
                         }}
-                        placeholder={`Outcome ${index + 1}`}
-                      />
-                      {marketForm.outcomes.length > 2 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            const newOutcomes = marketForm.outcomes.filter((_, i) => i !== index);
-                            setMarketForm({ ...marketForm, outcomes: newOutcomes });
-                          }}
-                        >
-                          Remove
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                  {marketForm.marketType === "categorical" && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setMarketForm({
-                          ...marketForm,
-                          outcomes: [...marketForm.outcomes, `Option ${marketForm.outcomes.length + 1}`],
-                        });
-                      }}
-                    >
-                      + Add Outcome
-                    </Button>
-                  )}
-                </div>
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                {marketForm.marketType === "categorical" && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setMarketForm({
+                        ...marketForm,
+                        outcomes: [...marketForm.outcomes, `Option ${marketForm.outcomes.length + 1}`],
+                      });
+                    }}
+                  >
+                    + Add Outcome
+                  </Button>
+                )}
               </div>
             </div>
 
