@@ -1,6 +1,19 @@
-import { useEffect, useState } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useEffect, useState, useMemo } from "react";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+  ReferenceDot,
+  Label,
+  LabelList
+} from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface PriceData {
   timestamp: string;
@@ -12,12 +25,34 @@ interface PriceChartProps {
   marketId: number;
 }
 
+const CustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-card/95 backdrop-blur-md border border-border p-3 rounded-xl shadow-2xl">
+        <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">
+          {new Date(data.timestamp).toLocaleString([], {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })}
+        </div>
+        <div className="text-xl font-mono font-black text-foreground">
+          ${data.price.toFixed(4)}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 export function PriceChart({ marketId }: PriceChartProps) {
   const [priceData, setPriceData] = useState<PriceData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch price history
     fetch(`/api/markets/${marketId}/price-history`)
       .then(res => res.json())
       .then(data => {
@@ -26,10 +61,9 @@ export function PriceChart({ marketId }: PriceChartProps) {
       })
       .catch(err => {
         console.error("Failed to fetch price data:", err);
-        // Generate mock data for now
-        const mockData = Array.from({ length: 24 }, (_, i) => ({
-          timestamp: new Date(Date.now() - (23 - i) * 60 * 60 * 1000).toISOString(),
-          price: 0.5 + Math.random() * 0.4 - 0.2,
+        const mockData = Array.from({ length: 48 }, (_, i) => ({
+          timestamp: new Date(Date.now() - (47 - i) * 30 * 60 * 1000).toISOString(),
+          price: 2394.32 + Math.sin(i / 5) * 150 + Math.random() * 50,
           volume: Math.random() * 1000
         }));
         setPriceData(mockData);
@@ -37,51 +71,141 @@ export function PriceChart({ marketId }: PriceChartProps) {
       });
   }, [marketId]);
 
+  const stats = useMemo(() => {
+    if (!priceData.length) return null;
+    const currentPrice = priceData[priceData.length - 1].price;
+    const firstPrice = priceData[0].price;
+    const change = currentPrice - firstPrice;
+    const changePercent = (change / firstPrice) * 100;
+
+    let high = priceData[0];
+    let low = priceData[0];
+    priceData.forEach(d => {
+      if (d.price > high.price) high = d;
+      if (d.price < low.price) low = d;
+    });
+
+    return { currentPrice, change, changePercent, high, low };
+  }, [priceData]);
+
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Price Chart</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64 flex items-center justify-center">
-            Loading chart...
-          </div>
+      <Card className="border-none bg-transparent shadow-none">
+        <CardContent className="h-[400px] flex items-center justify-center text-muted-foreground font-display font-medium uppercase tracking-widest text-xs">
+          Loading Market Data...
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Price Chart</CardTitle>
+    <Card className="border-none bg-white dark:bg-zinc-950 shadow-none overflow-hidden group p-4">
+      <CardHeader className="flex flex-row items-baseline justify-start space-y-0 pb-8 px-0">
+        <div className="flex items-baseline gap-4">
+          <span className="text-5xl font-sans font-bold tracking-tight text-foreground">
+            ${stats?.currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+          <div className={`flex items-center gap-1.5 font-sans font-semibold text-lg ${stats && stats.change >= 0 ? 'text-[#10b981]' : 'text-destructive'}`}>
+            {stats && stats.change >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+            ${Math.abs(stats?.change || 0).toFixed(2)} ({stats?.changePercent.toFixed(2)}%)
+          </div>
+        </div>
       </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={priceData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="timestamp" 
-              tickFormatter={(value) => new Date(value).toLocaleTimeString()}
-            />
-            <YAxis 
-              domain={[0, 1]}
-              tickFormatter={(value) => `$${value.toFixed(2)}`}
-            />
-            <Tooltip 
-              labelFormatter={(value) => new Date(value).toLocaleString()}
-              formatter={(value: number) => [`$${value.toFixed(4)}`, "Price"]}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="price" 
-              stroke="#10b981" 
-              strokeWidth={2}
-              dot={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+
+      <CardContent className="p-0">
+        <div className="h-[400px] w-full relative">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={priceData} margin={{ top: 40, right: 10, left: 10, bottom: 20 }}>
+              <defs>
+                <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.01} />
+                </linearGradient>
+              </defs>
+
+              <XAxis
+                dataKey="timestamp"
+                axisLine={false}
+                tickLine={false}
+                minTickGap={80}
+                tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 700 }}
+                tickFormatter={(value) => new Date(value).toLocaleDateString([], { month: 'short', day: 'numeric' }).toUpperCase()}
+                dy={15}
+              />
+
+              <YAxis
+                orientation="right"
+                domain={['auto', 'auto']}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 500 }}
+                tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value.toFixed(0)}
+                dx={5}
+              />
+
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '4 4' }}
+              />
+
+              <Area
+                type="monotone"
+                dataKey="price"
+                stroke="#2563eb"
+                strokeWidth={2.5}
+                fillOpacity={1}
+                fill="url(#colorPrice)"
+                animationDuration={1500}
+                activeDot={{ r: 5, fill: '#2563eb', stroke: '#fff', strokeWidth: 2 }}
+              >
+                <LabelList
+                  dataKey="price"
+                  content={(props: any) => {
+                    const { x, y, value, index } = props;
+                    const isHigh = priceData[index] === stats?.high;
+                    const isLow = priceData[index] === stats?.low;
+
+                    if (isHigh || isLow) {
+                      return (
+                        <g>
+                          <text
+                            x={x}
+                            y={y - 15}
+                            fill="#1e293b"
+                            fontSize={12}
+                            fontWeight={700}
+                            textAnchor="middle"
+                            className="font-sans"
+                          >
+                            ${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                          </text>
+                        </g>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+              </Area>
+
+              {/* Current Price Reference Line & Badge */}
+              {stats && (
+                <ReferenceLine
+                  y={stats.currentPrice}
+                  stroke="#2563eb"
+                  strokeWidth={1}
+                  label={(props: any) => (
+                    <g transform={`translate(${props.viewBox.width + props.viewBox.x}, ${props.viewBox.y})`}>
+                      <rect x={0} y={-10} width={60} height={20} rx={4} fill="#2563eb" />
+                      <text x={30} y={4} fill="#fff" fontSize={10} fontWeight={700} textAnchor="middle">
+                        ${stats.currentPrice.toFixed(2)}
+                      </text>
+                    </g>
+                  )}
+                />
+              )}
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );

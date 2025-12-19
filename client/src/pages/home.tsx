@@ -92,7 +92,7 @@ export default function Home() {
 
       {/* Market Type Filter */}
       <section className="mb-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
-        <MarketTypeFilter 
+        <MarketTypeFilter
           selectedType={selectedMarketType}
           onTypeChange={setSelectedMarketType}
           counts={marketTypeCounts}
@@ -117,13 +117,9 @@ export default function Home() {
 
         {otherMarkets.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {otherMarkets.map((market: any) => {
-              // Use ComplexMarketCard for non-binary markets
-              if (market.marketType && market.marketType !== "binary") {
-                return <ComplexMarketCard key={market.id} market={market} />;
-              }
-              return <MarketCard key={market.id} market={market} />;
-            })}
+            {otherMarkets.map((market: any) => (
+              <MarketCard key={market.id} market={market} />
+            ))}
           </div>
         ) : (
           <div className="text-center py-20 bg-muted/10 rounded-xl border border-dashed border-muted">
