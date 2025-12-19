@@ -66,22 +66,26 @@ export default function AdminPage() {
       const probability = (100 / marketForm.outcomes.length).toFixed(2);
       const colors = ["#10b981", "#ef4444", "#3b82f6", "#f59e0b", "#8b5cf6"];
       
+      const payload = {
+        title: marketForm.title,
+        description: marketForm.description,
+        category: marketForm.category,
+        endDate: new Date(marketForm.endDate).toISOString(),
+        marketType: marketForm.marketType,
+        scalarRange: marketForm.marketType === "scalar" ? marketForm.scalarRange : null,
+        outcomes: marketForm.marketType === "scalar" ? [] : marketForm.outcomes.map((label, index) => ({
+          label,
+          probability,
+          color: colors[index % colors.length],
+        })),
+      };
+      
+      console.log("Creating market with payload:", payload);
+      
       const res = await fetch(`${config.apiUrl}/api/markets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: marketForm.title,
-          description: marketForm.description,
-          category: marketForm.category,
-          endDate: new Date(marketForm.endDate).toISOString(),
-          marketType: marketForm.marketType,
-          scalarRange: marketForm.marketType === "scalar" ? marketForm.scalarRange : null,
-          outcomes: marketForm.marketType === "scalar" ? [] : marketForm.outcomes.map((label, index) => ({
-            label,
-            probability,
-            color: colors[index % colors.length],
-          })),
-        }),
+        body: JSON.stringify(payload),
       });
       
       if (res.ok) {
@@ -97,6 +101,7 @@ export default function AdminPage() {
         });
       } else {
         const error = await res.json();
+        console.error("API Error:", error);
         throw new Error(error.error || "Failed to create market");
       }
     } catch (error: any) {
