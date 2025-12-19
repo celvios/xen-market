@@ -158,12 +158,16 @@ export async function registerRoutes(
     try {
       const { title, description, image, category, endDate, conditionId, txHash, outcomes, marketType, scalarRange } = req.body;
 
-      if (!title || !category || !endDate || !outcomes || outcomes.length < 2) {
+      if (!title || !category || !endDate) {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
       // Validate market type specific requirements
-      if (marketType === "categorical" && outcomes.length < 3) {
+      if (marketType === "binary" && (!outcomes || outcomes.length !== 2)) {
+        return res.status(400).json({ error: "Binary markets need exactly 2 outcomes" });
+      }
+
+      if (marketType === "categorical" && (!outcomes || outcomes.length < 3)) {
         return res.status(400).json({ error: "Categorical markets need at least 3 outcomes" });
       }
 
@@ -186,12 +190,12 @@ export async function registerRoutes(
           marketType: marketType || "binary",
           scalarRange: scalarRange || null,
         } as any,
-        outcomes.map((outcome: any, index: number) => ({
-          marketId: 0, // Will be set by storage
+        outcomes && outcomes.length > 0 ? outcomes.map((outcome: any, index: number) => ({
+          marketId: 0,
           label: outcome.label || outcome,
           probability: outcome.probability || (100 / outcomes.length).toFixed(2),
           color: outcome.color || (index === 0 ? "#10b981" : "#ef4444"),
-        }))
+        })) : []
       );
 
       // Invalidate cache

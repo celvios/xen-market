@@ -76,7 +76,7 @@ export default function AdminPage() {
           endDate: new Date(marketForm.endDate).toISOString(),
           marketType: marketForm.marketType,
           scalarRange: marketForm.marketType === "scalar" ? marketForm.scalarRange : null,
-          outcomes: marketForm.outcomes.map((label, index) => ({
+          outcomes: marketForm.marketType === "scalar" ? [] : marketForm.outcomes.map((label, index) => ({
             label,
             probability,
             color: colors[index % colors.length],
