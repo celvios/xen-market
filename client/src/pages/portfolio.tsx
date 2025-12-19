@@ -44,10 +44,12 @@ export default function Portfolio() {
   }
 
   const portfolioValue = positions.reduce((acc, pos) => {
-    return acc + parseFloat(pos.shares) * parseFloat(pos.outcome.probability) / 100;
+    const shares = parseFloat(pos.shares);
+    const avgPrice = parseFloat(pos.avgPrice);
+    return acc + (shares * avgPrice);
   }, 0);
 
-  const totalValue = user.balance + portfolioValue;
+  const totalValue = parseFloat(user.balance) + portfolioValue;
 
   return (
     <Layout>
@@ -141,8 +143,12 @@ export default function Portfolio() {
           ) : (
             <div className="grid gap-4">
               {positions.map((pos, idx) => {
-                const currentValue = parseFloat(pos.shares) * parseFloat(pos.outcome.probability) / 100;
-                const pnl = currentValue - parseFloat(pos.shares) * parseFloat(pos.avgPrice);
+                const shares = parseFloat(pos.shares);
+                const avgPrice = parseFloat(pos.avgPrice);
+                const invested = shares * avgPrice;
+                const currentPrice = parseFloat(pos.outcome.probability) / 100;
+                const currentValue = shares * currentPrice;
+                const pnl = currentValue - invested;
                 
                 return (
                   <Card key={`${pos.marketId}-${pos.outcomeId}-${idx}`} className="overflow-hidden hover:border-primary/30 transition-colors" data-testid={`card-position-${pos.id}`}>

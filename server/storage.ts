@@ -158,7 +158,19 @@ export class DatabaseStorage implements IStorage {
 
   async getLeaderboard(limit: number = 10): Promise<{ user: User; profit: number }[]> {
     const allUsers = await db.select().from(users).limit(limit);
-    return allUsers.map((user: User) => ({ user, profit: Math.random() * 50000 })).sort((a, b) => b.profit - a.profit);
+    const leaderboard = await Promise.all(
+      allUsers.map(async (user: User) => {
+        const userPositions = await this.getUserPositions(user.id);
+        const profit = userPositions.reduce((acc, pos) => {
+          const shares = parseFloat(pos.shares);
+          const avgPrice = parseFloat(pos.avgPrice);
+          const currentPrice = parseFloat(pos.outcome.probability) / 100;
+          return acc + (shares * currentPrice - shares * avgPrice);
+        }, 0);
+        return { user, profit };
+      })
+    );
+    return leaderboard.sort((a, b) => b.profit - a.profit);
   }
 
   async createOrder(order: InsertOrder): Promise<Order> {
@@ -347,10 +359,19 @@ export class MemStorage implements IStorage {
   }
 
   async getLeaderboard(limit: number): Promise<{ user: User; profit: number }[]> {
-    return Object.values(this.db.users)
-      .map(user => ({ user, profit: Math.random() * 1000 }))
-      .sort((a, b) => b.profit - a.profit)
-      .slice(0, limit);
+    const leaderboard = Object.values(this.db.users).map(user => {
+      const userPositions = Object.values(this.db.positions).filter(p => p.userId === user.id);
+      const profit = userPositions.reduce((acc, pos) => {
+        const outcome = this.db.outcomes[pos.outcomeId];
+        if (!outcome) return acc;
+        const shares = parseFloat(pos.shares);
+        const avgPrice = parseFloat(pos.avgPrice);
+        const currentPrice = parseFloat(outcome.probability) / 100;
+        return acc + (shares * currentPrice - shares * avgPrice);
+      }, 0);
+      return { user, profit };
+    });
+    return leaderboard.sort((a, b) => b.profit - a.profit).slice(0, limit);
   }
 
   async createOrder(order: InsertOrder): Promise<Order> {
