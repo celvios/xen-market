@@ -92,9 +92,9 @@ await registerRoutes(httpServer, app);
 initWebSocket(httpServer);
 log("WebSocket server initialized");
 
-if (process.env.NODE_ENV !== "production") {
-  indexer.start().catch(err => console.error("Indexer failed to start:", err));
-}
+// Start indexer in all environments
+indexer.start().catch(err => console.error("Indexer failed to start:", err));
+log("Blockchain indexer started");
 
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   const status = err.status || err.statusCode || 500;
