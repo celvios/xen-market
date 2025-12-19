@@ -1,6 +1,8 @@
-import { ethers } from "hardhat";
+import hre from "hardhat";
 import fs from "fs";
 import path from "path";
+
+const { ethers } = hre;
 
 async function main() {
   console.log("Deploying MockUSDC...");

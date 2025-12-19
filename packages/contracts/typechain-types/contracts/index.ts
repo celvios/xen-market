@@ -3,6 +3,7 @@
 /* eslint-disable */
 export type { ConditionalTokens } from "./ConditionalTokens";
 export type { MarketFactory } from "./MarketFactory";
+export type { MockUSDC } from "./MockUSDC";
 export type { MultiOutcomeMarket } from "./MultiOutcomeMarket";
 export type { OrderBook } from "./OrderBook";
 export type { OrderBookV2 } from "./OrderBookV2";
