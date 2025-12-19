@@ -753,6 +753,42 @@
       "artifacts": [
         "MultiOutcomeMarket"
       ]
+    },
+    "C:\\Users\\toluk\\Downloads\\Xen-Markets\\Xen-Markets\\packages\\contracts\\contracts\\OrderBookV2.sol": {
+      "lastModificationDate": 1766140617462,
+      "contentHash": "a1f808e43e0a6c659ddfc5b0f7dd0e3f",
+      "sourceName": "contracts/OrderBookV2.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "OrderBookV2"
+      ]
     }
   }
 }

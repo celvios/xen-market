@@ -34,3 +34,5 @@ export type { MultiOutcomeMarket } from "./contracts/MultiOutcomeMarket";
 export { MultiOutcomeMarket__factory } from "./factories/contracts/MultiOutcomeMarket__factory";
 export type { OrderBook } from "./contracts/OrderBook";
 export { OrderBook__factory } from "./factories/contracts/OrderBook__factory";
+export type { OrderBookV2 } from "./contracts/OrderBookV2";
+export { OrderBookV2__factory } from "./factories/contracts/OrderBookV2__factory";

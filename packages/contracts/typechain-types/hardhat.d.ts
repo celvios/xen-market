@@ -69,6 +69,10 @@ declare module "hardhat/types/runtime" {
       name: "OrderBook",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.OrderBook__factory>;
+    getContractFactory(
+      name: "OrderBookV2",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.OrderBookV2__factory>;
 
     getContractAt(
       name: "IERC1155Errors",
@@ -140,6 +144,11 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.OrderBook>;
+    getContractAt(
+      name: "OrderBookV2",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.OrderBookV2>;
 
     deployContract(
       name: "IERC1155Errors",
@@ -197,6 +206,10 @@ declare module "hardhat/types/runtime" {
       name: "OrderBook",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.OrderBook>;
+    deployContract(
+      name: "OrderBookV2",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.OrderBookV2>;
 
     deployContract(
       name: "IERC1155Errors",
@@ -268,6 +281,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.OrderBook>;
+    deployContract(
+      name: "OrderBookV2",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.OrderBookV2>;
 
     // default types
     getContractFactory(

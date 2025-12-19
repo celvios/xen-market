@@ -5,3 +5,4 @@ export type { ConditionalTokens } from "./ConditionalTokens";
 export type { MarketFactory } from "./MarketFactory";
 export type { MultiOutcomeMarket } from "./MultiOutcomeMarket";
 export type { OrderBook } from "./OrderBook";
+export type { OrderBookV2 } from "./OrderBookV2";

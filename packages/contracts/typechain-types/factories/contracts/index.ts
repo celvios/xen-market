@@ -5,3 +5,4 @@ export { ConditionalTokens__factory } from "./ConditionalTokens__factory";
 export { MarketFactory__factory } from "./MarketFactory__factory";
 export { MultiOutcomeMarket__factory } from "./MultiOutcomeMarket__factory";
 export { OrderBook__factory } from "./OrderBook__factory";
+export { OrderBookV2__factory } from "./OrderBookV2__factory";

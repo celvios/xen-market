@@ -1,11 +1,11 @@
-import { ethers } from "hardhat";
-import fs from "fs";
-import path from "path";
+const hre = require("hardhat");
+const fs = require("fs");
+const path = require("path");
 
 async function main() {
   console.log("Deploying OrderBookV2...");
 
-  const OrderBookV2 = await ethers.getContractFactory("OrderBookV2");
+  const OrderBookV2 = await hre.ethers.getContractFactory("OrderBookV2");
   const orderBook = await OrderBookV2.deploy();
   await orderBook.waitForDeployment();
 
@@ -32,3 +32,5 @@ main()
     console.error(error);
     process.exit(1);
   });
+
+module.exports = {};
