@@ -43,7 +43,10 @@ export default function Portfolio() {
     );
   }
 
-  const portfolioValue = positions.reduce((acc, pos) => {
+  const activePositions = positions.filter(p => !p.market.isResolved && parseFloat(p.shares) > 0);
+  const resolvedPositions = positions.filter(p => p.market.isResolved && parseFloat(p.shares) > 0);
+
+  const portfolioValue = activePositions.reduce((acc, pos) => {
     const shares = parseFloat(pos.shares);
     const avgPrice = parseFloat(pos.avgPrice);
     return acc + (shares * avgPrice);
@@ -111,23 +114,68 @@ export default function Portfolio() {
                 ${portfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
                <div className="text-xs text-muted-foreground mt-1 flex items-center">
-                 <PieChart className="w-3 h-3 mr-1" /> {positions.length} Active Positions
+                 <PieChart className="w-3 h-3 mr-1" /> {activePositions.length} Active
                </div>
             </CardContent>
           </Card>
         </div>
 
         {/* P&L Calculator */}
-        {positions.length > 0 && <PnLCalculator positions={positions} />}
+        {activePositions.length > 0 && <PnLCalculator positions={activePositions} />}
 
-        {/* Positions Table */}
+        {/* Resolved Markets */}
+        {resolvedPositions.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Resolved Markets</h2>
+            <div className="grid gap-4">
+              {resolvedPositions.map((pos, idx) => {
+                const shares = parseFloat(pos.shares);
+                const isWinner = pos.outcomeId === pos.market.resolvedOutcomeId;
+                const payout = isWinner ? shares * 1.0 : 0;
+                
+                return (
+                  <Card key={`resolved-${pos.marketId}-${pos.outcomeId}-${idx}`} className={`overflow-hidden ${isWinner ? 'border-green-500/30 bg-green-500/5' : 'border-muted'}`}>
+                    <div className="flex flex-col md:flex-row items-center p-4 gap-4">
+                      <img src={pos.market.image} alt="" className="w-12 h-12 rounded bg-muted object-cover" />
+                      
+                      <div className="flex-1 min-w-0 text-center md:text-left">
+                        <Link href={`/market/${pos.market.id}`}>
+                          <h3 className="font-medium truncate hover:text-primary transition-colors">{pos.market.title}</h3>
+                        </Link>
+                        <div className="text-sm text-muted-foreground">
+                          Your outcome: <span className={isWinner ? 'text-green-600 font-medium' : 'text-muted-foreground'}>{pos.outcome.label}</span>
+                          {isWinner && <span className="ml-2 text-green-600">✓ Winner</span>}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-8 text-right text-sm">
+                        <div>
+                          <div className="text-muted-foreground text-xs uppercase">Shares</div>
+                          <div className="font-mono">{shares.toFixed(2)}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground text-xs uppercase">Payout</div>
+                          <div className={`font-mono font-medium ${isWinner ? 'text-green-600' : 'text-muted-foreground'}`}>
+                            ${payout.toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Active Positions */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Active Positions</h2>
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
-          ) : positions.length === 0 ? (
+          ) : activePositions.length === 0 && resolvedPositions.length === 0 ? (
             <Card className="p-12 text-center border-dashed">
               <div className="flex flex-col items-center gap-4">
                 <TrendingUp className="w-12 h-12 text-muted-foreground/50" />
@@ -140,9 +188,13 @@ export default function Portfolio() {
                 </Link>
               </div>
             </Card>
+          ) : activePositions.length === 0 ? (
+            <Card className="p-8 text-center border-dashed">
+              <p className="text-muted-foreground">No active positions</p>
+            </Card>
           ) : (
             <div className="grid gap-4">
-              {positions.map((pos, idx) => {
+              {activePositions.map((pos, idx) => {
                 const shares = parseFloat(pos.shares);
                 const avgPrice = parseFloat(pos.avgPrice);
                 const invested = shares * avgPrice;

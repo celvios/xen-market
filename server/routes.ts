@@ -7,11 +7,16 @@ import { sql } from "drizzle-orm";
 import fs from "fs";
 import path from "path";
 import { getWebSocketService } from "./websocket";
+import { requireAdmin } from "./middleware/auth";
+import { apiLimiter, tradeLimiter, authLimiter } from "./middleware/rate-limit";
+import { validateRequest, tradeSchema, resolutionSchema, depositSchema } from "./middleware/validation";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Apply global rate limiting
+  app.use("/api/", apiLimiter);
   // Config endpoint to serve contract addresses
   app.get("/api/config", (req, res) => {
     try {
@@ -337,7 +342,7 @@ export async function registerRoutes(
   });
 
   // Deposit USDC
-  app.post("/api/users/:id/deposit", async (req, res) => {
+  app.post("/api/users/:id/deposit", validateRequest(depositSchema), async (req, res) => {
     try {
       const { amount, txHash } = req.body;
       const userId = req.params.id;
@@ -525,7 +530,7 @@ export async function registerRoutes(
   });
 
   // Buy shares
-  app.post("/api/trade/buy", async (req, res) => {
+  app.post("/api/trade/buy", tradeLimiter, validateRequest(tradeSchema), async (req, res) => {
     try {
       const { userId, marketId, outcomeId, amountUSD, price, isMaker = false } = req.body;
 
@@ -617,7 +622,7 @@ export async function registerRoutes(
   });
 
   // Sell shares
-  app.post("/api/trade/sell", async (req, res) => {
+  app.post("/api/trade/sell", tradeLimiter, validateRequest(tradeSchema), async (req, res) => {
     try {
       const { userId, marketId, outcomeId, shares, price } = req.body;
 
@@ -731,7 +736,7 @@ export async function registerRoutes(
   // ===== RESOLUTION ROUTES =====
 
   // Propose market resolution
-  app.post("/api/markets/:id/resolve", async (req, res) => {
+  app.post("/api/markets/:id/resolve", authLimiter, requireAdmin, validateRequest(resolutionSchema), async (req, res) => {
     try {
       const marketId = parseInt(req.params.id);
       const { outcomeId, evidence, proposer } = req.body;

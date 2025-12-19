@@ -11,13 +11,9 @@ export interface ResolutionData {
 export class ResolutionService {
   async resolveMarket(data: ResolutionData): Promise<void> {
     try {
-      // Update market as resolved
-      await this.updateMarketResolution(data.marketId, data.winningOutcomeId);
-      
-      // Calculate and distribute payouts
+      await storage.resolveMarket(data.marketId, data.winningOutcomeId);
       await this.calculatePayouts(data.marketId, data.winningOutcomeId);
       
-      // Broadcast resolution
       const ws = getWebSocketService();
       if (ws) {
         ws.broadcastMarketResolution(data.marketId, data.winningOutcomeId);
@@ -30,34 +26,24 @@ export class ResolutionService {
     }
   }
 
-  private async updateMarketResolution(marketId: number, winningOutcomeId: number): Promise<void> {
-    // In a real implementation, this would update the database
-    // For now, we'll use the storage interface
-    console.log(`Resolving market ${marketId} to outcome ${winningOutcomeId}`);
-  }
-
   private async calculatePayouts(marketId: number, winningOutcomeId: number): Promise<void> {
-    // Get all positions for this market
-    const positions = await storage.getUserPositions(""); // This would need to be modified to get all positions
+    const positions = await storage.getMarketPositions(marketId);
     
-    // Calculate payouts for winning positions
     for (const position of positions) {
-      if (position.marketId === marketId && position.outcomeId === winningOutcomeId) {
-        const payout = parseFloat(position.shares) * 1.0; // $1 per winning share
+      if (position.outcomeId === winningOutcomeId) {
+        const payout = parseFloat(position.shares) * 1.0;
+        const user = position.user;
         
-        // Update user balance
-        const user = await storage.getUser(position.userId);
         if (user) {
           const newBalance = (parseFloat(user.balance) + payout).toFixed(2);
           await storage.updateUserBalance(position.userId, newBalance);
+          console.log(`Paid out ${payout} to user ${position.userId}`);
         }
       }
     }
   }
 
   async proposeResolution(marketId: number, outcomeId: number, evidence: string, proposer: string): Promise<void> {
-    // In a real system, this would create a resolution proposal
-    // For now, auto-resolve after a delay
     setTimeout(() => {
       this.resolveMarket({
         marketId,
@@ -65,7 +51,7 @@ export class ResolutionService {
         evidence,
         resolvedBy: proposer
       });
-    }, 5000); // 5 second delay for demo
+    }, 1000);
   }
 }
 

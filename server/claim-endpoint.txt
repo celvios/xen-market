@@ -1,0 +1,45 @@
+  // Claim winnings from resolved market
+  app.post("/api/markets/:id/claim", async (req, res) => {
+    try {
+      const marketId = parseInt(req.params.id);
+      const { userId } = req.body;
+
+      if (!userId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+
+      const market = await storage.getMarket(marketId);
+      if (!market) {
+        return res.status(404).json({ error: "Market not found" });
+      }
+
+      if (!market.isResolved) {
+        return res.status(400).json({ error: "Market not resolved yet" });
+      }
+
+      const position = await storage.getPosition(userId, marketId, market.resolvedOutcomeId!);
+      if (!position) {
+        return res.status(404).json({ error: "No winning position found" });
+      }
+
+      const shares = parseFloat(position.shares);
+      if (shares <= 0) {
+        return res.status(400).json({ error: "No shares to claim" });
+      }
+
+      const payout = shares * 1.0;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const newBalance = (parseFloat(user.balance) + payout).toFixed(2);
+      await storage.updateUserBalance(userId, newBalance);
+      await storage.updatePosition(position.id, "0", position.avgPrice);
+
+      res.json({ success: true, payout, newBalance });
+    } catch (error) {
+      console.error("Error claiming winnings:", error);
+      res.status(500).json({ error: "Failed to claim winnings" });
+    }
+  });

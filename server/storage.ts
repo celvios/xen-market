@@ -21,10 +21,12 @@ export interface IStorage {
   getAllMarkets(): Promise<(Market & { outcomes: Outcome[] })[]>;
   getMarket(id: number): Promise<(Market & { outcomes: Outcome[] }) | undefined>;
   createMarket(market: InsertMarket, marketOutcomes: InsertOutcome[]): Promise<Market>;
+  resolveMarket(marketId: number, outcomeId: number): Promise<void>;
 
   // Position operations
   getUserPositions(userId: string): Promise<(Position & { market: Market; outcome: Outcome })[]>;
   getPosition(userId: string, marketId: number, outcomeId: number): Promise<Position | undefined>;
+  getMarketPositions(marketId: number): Promise<(Position & { user: User; outcome: Outcome })[]>;
   createPosition(position: InsertPosition): Promise<Position>;
   updatePosition(id: number, shares: string, avgPrice: string): Promise<void>;
 
@@ -60,7 +62,6 @@ interface MockDb {
 }
 
 export class DatabaseStorage implements IStorage {
-  // Existing DatabaseStorage implementation
   async getUser(id: string): Promise<User | undefined> {
     const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
     return result[0];
@@ -109,6 +110,13 @@ export class DatabaseStorage implements IStorage {
     return createdMarket;
   }
 
+  async resolveMarket(marketId: number, outcomeId: number): Promise<void> {
+    await db.update(markets).set({ 
+      isResolved: true, 
+      resolvedOutcomeId: outcomeId 
+    }).where(eq(markets.id, marketId));
+  }
+
   async getUserPositions(userId: string): Promise<(Position & { market: Market; outcome: Outcome })[]> {
     const userPositions = await db.select().from(positions).where(eq(positions.userId, userId)).orderBy(desc(positions.updatedAt));
     const positionsWithDetails = await Promise.all(
@@ -124,6 +132,18 @@ export class DatabaseStorage implements IStorage {
   async getPosition(userId: string, marketId: number, outcomeId: number): Promise<Position | undefined> {
     const result = await db.select().from(positions).where(and(eq(positions.userId, userId), eq(positions.marketId, marketId), eq(positions.outcomeId, outcomeId))).limit(1);
     return result[0];
+  }
+
+  async getMarketPositions(marketId: number): Promise<(Position & { user: User; outcome: Outcome })[]> {
+    const marketPositions = await db.select().from(positions).where(eq(positions.marketId, marketId));
+    const positionsWithDetails = await Promise.all(
+      marketPositions.map(async (position: Position) => {
+        const user = await db.select().from(users).where(eq(users.id, position.userId)).limit(1);
+        const outcome = await db.select().from(outcomes).where(eq(outcomes.id, position.outcomeId)).limit(1);
+        return { ...position, user: user[0], outcome: outcome[0] };
+      })
+    );
+    return positionsWithDetails;
   }
 
   async createPosition(position: InsertPosition): Promise<Position> {
@@ -303,6 +323,14 @@ export class MemStorage implements IStorage {
     return newMarket;
   }
 
+  async resolveMarket(marketId: number, outcomeId: number): Promise<void> {
+    if (this.db.markets[marketId]) {
+      this.db.markets[marketId].isResolved = true;
+      this.db.markets[marketId].resolvedOutcomeId = outcomeId;
+      this.save();
+    }
+  }
+
   async getUserPositions(userId: string): Promise<(Position & { market: Market; outcome: Outcome })[]> {
     return Object.values(this.db.positions)
       .filter(p => p.userId === userId)
@@ -317,6 +345,16 @@ export class MemStorage implements IStorage {
     return Object.values(this.db.positions).find(
       p => p.userId === userId && p.marketId === marketId && p.outcomeId === outcomeId
     );
+  }
+
+  async getMarketPositions(marketId: number): Promise<(Position & { user: User; outcome: Outcome })[]> {
+    return Object.values(this.db.positions)
+      .filter(p => p.marketId === marketId)
+      .map(p => ({
+        ...p,
+        user: this.db.users[p.userId],
+        outcome: this.db.outcomes[p.outcomeId]
+      }));
   }
 
   async createPosition(position: InsertPosition): Promise<Position> {
@@ -413,7 +451,6 @@ export class MemStorage implements IStorage {
   }
 
   private seedComplexMarkets(): void {
-    // Categorical Market
     const categoricalId = this.db.currentId++;
     this.db.markets[categoricalId] = {
       id: categoricalId,
@@ -433,7 +470,6 @@ export class MemStorage implements IStorage {
       resolvedOutcomeId: null
     } as any;
 
-    // Categorical outcomes
     const categoricalOutcomes = [
       { label: "Joe Biden", probability: "35.5" },
       { label: "Donald Trump", probability: "42.8" },
@@ -453,7 +489,6 @@ export class MemStorage implements IStorage {
       } as any;
     });
 
-    // Scalar Market
     const scalarId = this.db.currentId++;
     this.db.markets[scalarId] = {
       id: scalarId,
@@ -474,7 +509,6 @@ export class MemStorage implements IStorage {
       scalarRange: { min: 50000, max: 150000 }
     } as any;
 
-    // Scalar outcomes
     const scalarOutcomes = [
       { label: "Below $50,000", probability: "25.0" },
       { label: "Above $150,000", probability: "75.0" }
