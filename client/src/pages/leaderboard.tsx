@@ -1,22 +1,45 @@
 import Layout from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trophy, TrendingUp, Medal, Crown } from "lucide-react";
-
-const LEADERBOARD_DATA = [
-  { rank: 1, name: "CryptoWhale", handle: "@cwhale", profit: 45200.50, winRate: 78, avatar: "https://github.com/shadcn.png" },
-  { rank: 2, name: "PredictionKing", handle: "@predking", profit: 32150.00, winRate: 65, avatar: "https://github.com/shadcn.png" },
-  { rank: 3, name: "FutureSeer", handle: "@seer_v1", profit: 28900.25, winRate: 71, avatar: "https://github.com/shadcn.png" },
-  { rank: 4, name: "AlphaHunter", handle: "@alpha_h", profit: 15400.00, winRate: 55, avatar: null },
-  { rank: 5, name: "MarketMaker", handle: "@mm_bot", profit: 12300.80, winRate: 92, avatar: null },
-  { rank: 6, name: "Satoshi_Fan", handle: "@sat_fan", profit: 9800.50, winRate: 48, avatar: null },
-  { rank: 7, name: "ElonMuskFan", handle: "@doge_lover", profit: 8500.00, winRate: 42, avatar: null },
-  { rank: 8, name: "PolymarketUser", handle: "@poly_migrant", profit: 6200.20, winRate: 58, avatar: null },
-  { rank: 9, name: "Degenerate", handle: "@yolo_trader", profit: 4100.00, winRate: 12, avatar: null },
-  { rank: 10, name: "SafeBet", handle: "@safe_hands", profit: 3500.50, winRate: 88, avatar: null },
-];
+import { Crown, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchLeaderboard } from "@/lib/api";
 
 export default function Leaderboard() {
+  const { data: leaderboardData = [], isLoading } = useQuery({
+    queryKey: ["leaderboard"],
+    queryFn: () => fetchLeaderboard(10),
+  });
+
+  const LEADERBOARD_DATA = leaderboardData.map((entry, index) => ({
+    rank: index + 1,
+    name: entry.user.username || `User ${entry.user.id.slice(0, 6)}`,
+    handle: `@${entry.user.walletAddress?.slice(0, 6) || 'user'}`,
+    profit: entry.profit,
+    winRate: 0,
+    avatar: null
+  }));
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
+
+  if (LEADERBOARD_DATA.length === 0) {
+    return (
+      <Layout>
+        <div className="max-w-4xl mx-auto text-center py-20">
+          <h1 className="text-3xl font-display font-bold mb-4">No traders yet</h1>
+          <p className="text-muted-foreground">Be the first to start trading and claim the top spot!</p>
+        </div>
+      </Layout>
+    );
+  }
   return (
     <Layout>
       <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -43,7 +66,7 @@ export default function Leaderboard() {
               </div>
               <h3 className="font-bold text-lg">{LEADERBOARD_DATA[1].name}</h3>
               <p className="text-muted-foreground text-sm mb-2">{LEADERBOARD_DATA[1].handle}</p>
-              <div className="text-2xl font-mono text-green-400 font-bold">+${LEADERBOARD_DATA[1].profit.toLocaleString()}</div>
+              <div className="text-2xl font-mono text-green-400 font-bold">${LEADERBOARD_DATA[1].profit.toFixed(2)}</div>
             </CardContent>
           </Card>
 
@@ -61,8 +84,7 @@ export default function Leaderboard() {
               </div>
               <h3 className="font-bold text-xl">{LEADERBOARD_DATA[0].name}</h3>
               <p className="text-muted-foreground text-sm mb-4">{LEADERBOARD_DATA[0].handle}</p>
-              <div className="text-3xl font-mono text-green-400 font-bold">+${LEADERBOARD_DATA[0].profit.toLocaleString()}</div>
-              <div className="mt-2 text-xs text-yellow-500/80 font-mono">Win Rate: {LEADERBOARD_DATA[0].winRate}%</div>
+              <div className="text-3xl font-mono text-green-400 font-bold">${LEADERBOARD_DATA[0].profit.toFixed(2)}</div>
             </CardContent>
           </Card>
 
@@ -79,7 +101,7 @@ export default function Leaderboard() {
               </div>
               <h3 className="font-bold text-lg">{LEADERBOARD_DATA[2].name}</h3>
               <p className="text-muted-foreground text-sm mb-2">{LEADERBOARD_DATA[2].handle}</p>
-              <div className="text-xl font-mono text-green-400 font-bold">+${LEADERBOARD_DATA[2].profit.toLocaleString()}</div>
+              <div className="text-xl font-mono text-green-400 font-bold">${LEADERBOARD_DATA[2].profit.toFixed(2)}</div>
             </CardContent>
           </Card>
         </div>
@@ -102,8 +124,7 @@ export default function Leaderboard() {
                     <div className="text-xs text-muted-foreground">{user.handle}</div>
                   </div>
                   <div className="text-right">
-                    <div className="font-mono font-bold text-green-400">+${user.profit.toLocaleString()}</div>
-                    <div className="text-xs text-muted-foreground">Win Rate: {user.winRate}%</div>
+                    <div className="font-mono font-bold text-green-400">${user.profit.toFixed(2)}</div>
                   </div>
                 </div>
               ))}

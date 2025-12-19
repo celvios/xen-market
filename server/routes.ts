@@ -163,9 +163,9 @@ export async function registerRoutes(
   // Seed database endpoint
   app.get("/api/admin/seed", async (req, res) => {
     try {
-      const { seedDatabase } = await import("./seed");
-      await seedDatabase();
-      res.json({ success: true, message: "Database seeded successfully" });
+      const { seedRealMarkets } = await import("./seed-real-markets");
+      await seedRealMarkets();
+      res.json({ success: true, message: "Real markets seeded successfully" });
     } catch (error) {
       console.error("Seed error:", error);
       res.status(500).json({ error: "Seeding failed" });
