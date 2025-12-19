@@ -42,42 +42,41 @@ const SEED_MARKETS = [
   },
 ];
 
-async function seed() {
+export async function seedDatabase() {
   console.log("Seeding storage...");
 
-  try {
-    const existingMarkets = await storage.getAllMarkets();
-    if (existingMarkets.length > 0) {
-      console.log("Storage already seeded. Skipping...");
-      return;
-    }
-
-    for (const marketData of SEED_MARKETS) {
-      const { outcomes: marketOutcomes, ...marketInfo } = marketData;
-
-      const market: InsertMarket = {
-        ...marketInfo,
-        description: marketInfo.description ?? null,
-        isFeatured: marketInfo.isFeatured ?? false,
-        isResolved: false
-      };
-
-      const outcomes: InsertOutcome[] = marketOutcomes.map(o => ({
-        ...o,
-        probability: o.probability.toString()
-      }));
-
-      const insertedMarket = await storage.createMarket(market, outcomes);
-      console.log(`Created market: ${insertedMarket.title}`);
-    }
-
-    console.log("Storage seeded successfully!");
-  } catch (error) {
-    console.error("Error seeding storage:", error);
-    throw error;
-  } finally {
-    process.exit(0);
+  const existingMarkets = await storage.getAllMarkets();
+  if (existingMarkets.length > 0) {
+    console.log("Storage already seeded. Skipping...");
+    return { message: "Already seeded" };
   }
+
+  for (const marketData of SEED_MARKETS) {
+    const { outcomes: marketOutcomes, ...marketInfo } = marketData;
+
+    const market: InsertMarket = {
+      ...marketInfo,
+      description: marketInfo.description ?? null,
+      isFeatured: marketInfo.isFeatured ?? false,
+      isResolved: false
+    };
+
+    const outcomes: InsertOutcome[] = marketOutcomes.map(o => ({
+      ...o,
+      probability: o.probability.toString()
+    }));
+
+    const insertedMarket = await storage.createMarket(market, outcomes);
+    console.log(`Created market: ${insertedMarket.title}`);
+  }
+
+  console.log("Storage seeded successfully!");
+  return { message: "Seeded successfully" };
 }
 
-seed();
+if (require.main === module) {
+  seedDatabase().then(() => process.exit(0)).catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
