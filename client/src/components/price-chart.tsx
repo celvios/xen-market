@@ -23,6 +23,7 @@ interface PriceData {
 
 interface PriceChartProps {
   marketId: number;
+  outcomeId?: number;
 }
 
 const CustomTooltip = ({ active, payload }: any) => {
@@ -48,12 +49,17 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-export function PriceChart({ marketId }: PriceChartProps) {
+export function PriceChart({ marketId, outcomeId }: PriceChartProps) {
   const [priceData, setPriceData] = useState<PriceData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/markets/${marketId}/price-history`)
+    const apiUrl = import.meta.env.VITE_API_URL || "";
+    const endpoint = outcomeId 
+      ? `${apiUrl}/api/markets/${marketId}/outcomes/${outcomeId}/price-history`
+      : `${apiUrl}/api/markets/${marketId}/price-history`;
+    
+    fetch(endpoint)
       .then(res => res.json())
       .then(data => {
         setPriceData(data);
@@ -61,15 +67,10 @@ export function PriceChart({ marketId }: PriceChartProps) {
       })
       .catch(err => {
         console.error("Failed to fetch price data:", err);
-        const mockData = Array.from({ length: 48 }, (_, i) => ({
-          timestamp: new Date(Date.now() - (47 - i) * 30 * 60 * 1000).toISOString(),
-          price: 2394.32 + Math.sin(i / 5) * 150 + Math.random() * 50,
-          volume: Math.random() * 1000
-        }));
-        setPriceData(mockData);
+        setPriceData([]);
         setLoading(false);
       });
-  }, [marketId]);
+  }, [marketId, outcomeId]);
 
   const stats = useMemo(() => {
     if (!priceData.length) return null;
@@ -93,6 +94,16 @@ export function PriceChart({ marketId }: PriceChartProps) {
       <Card className="border-none bg-transparent shadow-none">
         <CardContent className="h-[400px] flex items-center justify-center text-muted-foreground font-display font-medium uppercase tracking-widest text-xs">
           Loading Market Data...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!priceData.length) {
+    return (
+      <Card className="border-none bg-transparent shadow-none">
+        <CardContent className="h-[400px] flex items-center justify-center text-muted-foreground font-display font-medium uppercase tracking-widest text-xs">
+          No price data available
         </CardContent>
       </Card>
     );

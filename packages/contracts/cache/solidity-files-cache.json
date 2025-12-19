@@ -715,6 +715,44 @@
       "artifacts": [
         "OrderBook"
       ]
+    },
+    "C:\\Users\\toluk\\Downloads\\Xen-Markets\\Xen-Markets\\packages\\contracts\\contracts\\MultiOutcomeMarket.sol": {
+      "lastModificationDate": 1766066401498,
+      "contentHash": "d3fbc665680557714b04476b77658b96",
+      "sourceName": "contracts/MultiOutcomeMarket.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./ConditionalTokens.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "MultiOutcomeMarket"
+      ]
     }
   }
 }

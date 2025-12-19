@@ -19,13 +19,11 @@ export default function AdminPage() {
     endDate: "",
     marketType: "binary",
     outcomes: ["Yes", "No"],
-    scalarRange: { min: 0, max: 100 },
   });
 
   const marketTypeOutcomes: Record<string, string[]> = {
     binary: ["Yes", "No"],
     categorical: ["Option 1", "Option 2", "Option 3"],
-    scalar: ["Range"],
   };
 
   const handleMigrate = async () => {
@@ -72,8 +70,7 @@ export default function AdminPage() {
         category: marketForm.category,
         endDate: new Date(marketForm.endDate).toISOString(),
         marketType: marketForm.marketType,
-        scalarRange: marketForm.marketType === "scalar" ? marketForm.scalarRange : null,
-        outcomes: marketForm.marketType === "scalar" ? [] : marketForm.outcomes.map((label, index) => ({
+        outcomes: marketForm.outcomes.map((label, index) => ({
           label,
           probability,
           color: colors[index % colors.length],
@@ -97,7 +94,6 @@ export default function AdminPage() {
           endDate: "",
           marketType: "binary",
           outcomes: ["Yes", "No"],
-          scalarRange: { min: 0, max: 100 },
         });
       } else {
         const error = await res.json();
@@ -171,24 +167,7 @@ export default function AdminPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
-              <div>
-                <div className="text-muted-foreground mb-1">ConditionalTokens</div>
-                <code className="text-xs bg-muted p-2 rounded block break-all">
-                  0xa0a04094b602f65d053c7d957b71c47734431a68
-                </code>
-              </div>
-              <div>
-                <div className="text-muted-foreground mb-1">MarketFactory</div>
-                <code className="text-xs bg-muted p-2 rounded block break-all">
-                  0x701e59e245b25851d9a8e4c92741aa98eb1e922f
-                </code>
-              </div>
-              <div>
-                <div className="text-muted-foreground mb-1">OrderBook</div>
-                <code className="text-xs bg-muted p-2 rounded block break-all">
-                  0xf166cf88288e8479af84211d9fa9f53567863cf0
-                </code>
-              </div>
+              <div className="text-muted-foreground">Polygon Amoy Testnet</div>
             </CardContent>
           </Card>
         </div>
@@ -234,8 +213,7 @@ export default function AdminPage() {
                   }}
                 >
                   <option value="binary">Binary (Yes/No)</option>
-                  <option value="categorical">Categorical (Multiple)</option>
-                  <option value="scalar">Scalar (Range)</option>
+                  <option value="categorical">Multiple Choice</option>
                 </select>
               </div>
 
@@ -266,34 +244,7 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {marketForm.marketType === "scalar" && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Min Value</Label>
-                  <Input
-                    type="number"
-                    value={marketForm.scalarRange.min}
-                    onChange={(e) => setMarketForm({
-                      ...marketForm,
-                      scalarRange: { ...marketForm.scalarRange, min: parseFloat(e.target.value) }
-                    })}
-                  />
-                </div>
-                <div>
-                  <Label>Max Value</Label>
-                  <Input
-                    type="number"
-                    value={marketForm.scalarRange.max}
-                    onChange={(e) => setMarketForm({
-                      ...marketForm,
-                      scalarRange: { ...marketForm.scalarRange, max: parseFloat(e.target.value) }
-                    })}
-                  />
-                </div>
-              </div>
-            )}
-
-            {marketForm.marketType !== "scalar" && (
+            {
               <div>
                 <Label>Outcomes</Label>
                 <div className="space-y-2">

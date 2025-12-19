@@ -62,6 +62,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MarketFactory__factory>;
     getContractFactory(
+      name: "MultiOutcomeMarket",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MultiOutcomeMarket__factory>;
+    getContractFactory(
       name: "OrderBook",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.OrderBook__factory>;
@@ -127,6 +131,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.MarketFactory>;
     getContractAt(
+      name: "MultiOutcomeMarket",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MultiOutcomeMarket>;
+    getContractAt(
       name: "OrderBook",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -181,6 +190,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MarketFactory>;
     deployContract(
+      name: "MultiOutcomeMarket",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.MultiOutcomeMarket>;
+    deployContract(
       name: "OrderBook",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.OrderBook>;
@@ -245,6 +258,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MarketFactory>;
+    deployContract(
+      name: "MultiOutcomeMarket",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.MultiOutcomeMarket>;
     deployContract(
       name: "OrderBook",
       args: any[],

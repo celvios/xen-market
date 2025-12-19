@@ -68,7 +68,6 @@ export default function MarketDetails() {
   const [amount, setAmount] = useState("");
   const [selectedOutcome, setSelectedOutcome] = useState<number | null>(null);
   const [isTransacting, setIsTransacting] = useState(false);
-  const [chartData] = useState(generateChartData());
   const [txStatus, setTxStatus] = useState<{
     isOpen: boolean;
     status: "pending" | "success" | "error";
@@ -246,7 +245,7 @@ export default function MarketDetails() {
             </Card>
             
             {/* Price Chart */}
-            <PriceChart marketId={market.id} />
+            <PriceChart marketId={market.id} outcomeId={activeOutcome?.id} />
             
             {/* Order Book */}
             <OrderBook marketId={market.id} />

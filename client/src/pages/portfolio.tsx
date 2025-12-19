@@ -7,9 +7,12 @@ import { ArrowUpRight, TrendingUp, Wallet, PieChart, Loader2 } from "lucide-reac
 import { useQuery } from "@tanstack/react-query";
 import { fetchPortfolio } from "@/lib/api";
 import { PnLCalculator } from "@/components/pnl-calculator";
+import { DepositDialog } from "@/components/deposit-dialog";
+import { useState } from "react";
 
 export default function Portfolio() {
-  const { user, login } = useStore();
+  const { user, login, refreshUser } = useStore();
+  const [depositOpen, setDepositOpen] = useState(false);
 
   const { data: positions = [], isLoading } = useQuery({
     queryKey: ["portfolio", user.id],
@@ -73,7 +76,15 @@ export default function Portfolio() {
               <div className="text-3xl font-mono font-bold text-foreground" data-testid="text-balance">
                 ${user.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
-              <Button variant="outline" size="sm" className="mt-4 h-8 text-xs w-full" data-testid="button-deposit">Deposit</Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-4 h-8 text-xs w-full" 
+                data-testid="button-deposit"
+                onClick={() => setDepositOpen(true)}
+              >
+                Deposit
+              </Button>
             </CardContent>
           </Card>
 
@@ -156,6 +167,12 @@ export default function Portfolio() {
             </div>
           )}
         </div>
+        
+        <DepositDialog 
+          isOpen={depositOpen} 
+          onClose={() => setDepositOpen(false)} 
+          onSuccess={refreshUser}
+        />
       </div>
     </Layout>
   );

@@ -30,5 +30,7 @@ export type { ConditionalTokens } from "./contracts/ConditionalTokens";
 export { ConditionalTokens__factory } from "./factories/contracts/ConditionalTokens__factory";
 export type { MarketFactory } from "./contracts/MarketFactory";
 export { MarketFactory__factory } from "./factories/contracts/MarketFactory__factory";
+export type { MultiOutcomeMarket } from "./contracts/MultiOutcomeMarket";
+export { MultiOutcomeMarket__factory } from "./factories/contracts/MultiOutcomeMarket__factory";
 export type { OrderBook } from "./contracts/OrderBook";
 export { OrderBook__factory } from "./factories/contracts/OrderBook__factory";

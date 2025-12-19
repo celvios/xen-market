@@ -10,225 +10,119 @@
   },
   "markets": {
     "1": {
-      "title": "Bitcoin to hit $100k by end of 2025?",
-      "description": "Prediction market on whether Bitcoin will reach $100,000 USD by December 31, 2025",
-      "image": "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?q=80&w=2069&auto=format&fit=crop",
-      "volume": "12500000",
-      "category": "Crypto",
-      "endDate": "2026-01-01T00:00:00.000Z",
+      "id": 1,
+      "title": "Fed decision in January: 50+ bps decrease?",
+      "description": "Will the Federal Reserve decrease interest rates by 50 basis points or more in January?",
+      "image": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800",
+      "volume": "37000000",
+      "category": "Monthly",
+      "endDate": "2026-01-31T23:59:59Z",
+      "isFeatured": false,
+      "isResolved": false,
+      "createdAt": "2025-12-18T07:56:11.495Z"
+    },
+    "2": {
+      "id": 2,
+      "title": "Andrew Tate vs. Chase Demoor",
+      "description": "Who will win the boxing match between Andrew Tate and Chase Demoor?",
+      "image": "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=800",
+      "volume": "496000",
+      "category": "Sports",
+      "endDate": "2025-12-25T23:59:59Z",
       "isFeatured": true,
       "isResolved": false,
-      "id": 1,
-      "createdAt": "2025-12-18T07:56:11.495Z",
-      "conditionId": null,
-      "questionId": null,
-      "txHash": null,
-      "resolvedOutcomeId": null
+      "createdAt": "2025-12-18T08:00:00.000Z"
+    },
+    "3": {
+      "id": 3,
+      "title": "Who will Trump nominate as Fed Chair?",
+      "description": "Prediction on Donald Trump's next nomination for the Federal Reserve Chair.",
+      "image": "https://images.unsplash.com/photo-1580130775562-0ef92da928de?w=800",
+      "volume": "70000000",
+      "category": "Politics",
+      "endDate": "2025-02-01T23:59:59Z",
+      "isFeatured": false,
+      "isResolved": false,
+      "createdAt": "2025-12-18T08:10:00.000Z"
     },
     "4": {
-      "title": "Will AGI be achieved before 2027?",
-      "description": "Market predicting artificial general intelligence (AGI) achievement",
-      "image": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1965&auto=format&fit=crop",
-      "volume": "45200000",
-      "category": "Tech",
-      "endDate": "2027-01-01T00:00:00.000Z",
+      "id": 4,
+      "title": "Rams @ Seahawks",
+      "description": "NFL Week 16: Los Angeles Rams vs. Seattle Seahawks",
+      "image": "https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=800",
+      "volume": "2000000",
+      "category": "NFL",
+      "endDate": "2025-12-19T02:15:00Z",
       "isFeatured": true,
       "isResolved": false,
-      "id": 4,
-      "createdAt": "2025-12-18T07:56:11.497Z",
-      "conditionId": null,
-      "questionId": null,
-      "txHash": null,
-      "resolvedOutcomeId": null
-    },
-    "7": {
-      "title": "Ethereum Flippening (Market Cap > BTC) in 2025?",
-      "description": "Will Ethereum's market cap surpass Bitcoin's in 2025?",
-      "image": "https://images.unsplash.com/photo-1622790698141-94e30457ef12?q=80&w=2072&auto=format&fit=crop",
-      "volume": "9400000",
-      "category": "Crypto",
-      "endDate": "2026-01-01T00:00:00.000Z",
-      "isFeatured": false,
-      "isResolved": false,
-      "id": 7,
-      "createdAt": "2025-12-18T07:56:11.499Z",
-      "conditionId": null,
-      "questionId": null,
-      "txHash": null,
-      "resolvedOutcomeId": null
-    },
-    "12": {
-      "title": "How much does the project cost",
-      "description": null,
-      "image": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800",
-      "category": "Custom",
-      "endDate": "2027-02-09T15:04",
-      "volume": "0",
-      "isFeatured": false,
-      "isResolved": false,
-      "conditionId": null,
-      "txHash": null,
-      "id": 12,
-      "createdAt": "2025-12-18T14:17:25.078Z",
-      "questionId": null,
-      "resolvedOutcomeId": null
-    },
-    "15": {
-      "title": "How much does the project cost",
-      "description": null,
-      "image": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800",
-      "category": "Custom",
-      "endDate": "2027-02-09T15:04",
-      "volume": "0",
-      "isFeatured": false,
-      "isResolved": false,
-      "conditionId": null,
-      "txHash": null,
-      "id": 15,
-      "createdAt": "2025-12-18T14:17:25.466Z",
-      "questionId": null,
-      "resolvedOutcomeId": null
-    },
-    "18": {
-      "title": "How much does the project cost",
-      "description": null,
-      "image": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800",
-      "category": "Custom",
-      "endDate": "2027-02-09T15:04",
-      "volume": "0",
-      "isFeatured": false,
-      "isResolved": false,
-      "conditionId": null,
-      "txHash": null,
-      "id": 18,
-      "createdAt": "2025-12-18T14:17:26.282Z",
-      "questionId": null,
-      "resolvedOutcomeId": null
-    },
-    "21": {
-      "title": "How much does the project cost",
-      "description": null,
-      "image": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800",
-      "category": "Custom",
-      "endDate": "2027-02-09T15:04",
-      "volume": "0",
-      "isFeatured": false,
-      "isResolved": false,
-      "conditionId": null,
-      "txHash": null,
-      "id": 21,
-      "createdAt": "2025-12-18T14:17:29.571Z",
-      "questionId": null,
-      "resolvedOutcomeId": null
+      "createdAt": "2025-12-18T08:20:00.000Z"
     }
   },
   "outcomes": {
+    "1": {
+      "id": 1,
+      "marketId": 1,
+      "label": "50+ bps decrease",
+      "probability": "1.00",
+      "color": "bg-primary"
+    },
     "2": {
-      "label": "Yes",
-      "probability": "65.00",
-      "color": "bg-primary",
       "id": 2,
-      "marketId": 1
+      "marketId": 1,
+      "label": "25 bps decrease",
+      "probability": "28.00",
+      "color": "bg-primary"
     },
     "3": {
-      "label": "No",
-      "probability": "35.00",
-      "color": "bg-destructive",
       "id": 3,
-      "marketId": 1
+      "marketId": 2,
+      "label": "Tate",
+      "probability": "84.00",
+      "color": "bg-primary"
+    },
+    "4": {
+      "id": 4,
+      "marketId": 2,
+      "label": "Demoor",
+      "probability": "16.00",
+      "color": "bg-destructive"
     },
     "5": {
-      "label": "Yes",
-      "probability": "22.00",
-      "color": "bg-primary",
       "id": 5,
-      "marketId": 4
+      "marketId": 3,
+      "label": "Kevin Hassett",
+      "probability": "53.00",
+      "color": "bg-primary"
     },
     "6": {
-      "label": "No",
-      "probability": "78.00",
-      "color": "bg-destructive",
       "id": 6,
-      "marketId": 4
+      "marketId": 3,
+      "label": "Kevin Warsh",
+      "probability": "28.00",
+      "color": "bg-primary"
+    },
+    "7": {
+      "id": 7,
+      "marketId": 4,
+      "label": "Rams",
+      "probability": "48.00",
+      "color": "bg-primary"
     },
     "8": {
-      "label": "Yes",
-      "probability": "28.00",
-      "color": "bg-primary",
       "id": 8,
-      "marketId": 7
-    },
-    "9": {
-      "label": "No",
-      "probability": "72.00",
-      "color": "bg-destructive",
-      "id": 9,
-      "marketId": 7
-    },
-    "13": {
-      "marketId": 12,
-      "label": "Below 2000",
-      "probability": "50.00",
-      "color": "#10b981",
-      "id": 13
-    },
-    "14": {
-      "marketId": 12,
-      "label": "Above 10000",
-      "probability": "50.00",
-      "color": "#ef4444",
-      "id": 14
-    },
-    "16": {
-      "marketId": 15,
-      "label": "Below 2000",
-      "probability": "50.00",
-      "color": "#10b981",
-      "id": 16
-    },
-    "17": {
-      "marketId": 15,
-      "label": "Above 10000",
-      "probability": "50.00",
-      "color": "#ef4444",
-      "id": 17
-    },
-    "19": {
-      "marketId": 18,
-      "label": "Below 2000",
-      "probability": "50.00",
-      "color": "#10b981",
-      "id": 19
-    },
-    "20": {
-      "marketId": 18,
-      "label": "Above 10000",
-      "probability": "50.00",
-      "color": "#ef4444",
-      "id": 20
-    },
-    "22": {
-      "marketId": 21,
-      "label": "Below 2000",
-      "probability": "50.00",
-      "color": "#10b981",
-      "id": 22
-    },
-    "23": {
-      "marketId": 21,
-      "label": "Above 10000",
-      "probability": "50.00",
-      "color": "#ef4444",
-      "id": 23
+      "marketId": 4,
+      "label": "Seahawks",
+      "probability": "53.00",
+      "color": "bg-primary"
     }
   },
   "positions": {
     "10": {
       "userId": "kuk11invk",
-      "marketId": 4,
-      "outcomeId": 5,
-      "shares": "909.09",
-      "avgPrice": "0.2200",
+      "marketId": 2,
+      "outcomeId": 3,
+      "shares": "100.00",
+      "avgPrice": "0.8400",
       "id": 10,
       "createdAt": "2025-12-18T13:43:09.592Z",
       "updatedAt": "2025-12-18T13:43:09.592Z"
@@ -237,15 +131,15 @@
   "trades": {
     "11": {
       "userId": "kuk11invk",
-      "marketId": 4,
-      "outcomeId": 5,
+      "marketId": 2,
+      "outcomeId": 3,
       "type": "buy",
-      "shares": "909.09",
-      "price": "0.2200",
-      "totalAmount": "200.00",
+      "shares": "100.00",
+      "price": "0.8400",
+      "totalAmount": "84.00",
       "id": 11,
       "createdAt": "2025-12-18T13:43:09.594Z"
     }
   },
-  "currentId": 24
+  "currentId": 12
 }
