@@ -62,7 +62,7 @@ export default function MarketDetails() {
   });
 
   const { user, refreshUser } = useStore();
-  const { splitPosition } = useContracts();
+  const { splitPosition, placeOrder: placeOrderOnChain } = useContracts();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [amount, setAmount] = useState("");
@@ -141,18 +141,29 @@ export default function MarketDetails() {
     setTxStatus({ isOpen: true, status: "pending" });
     
     try {
-      if (market?.conditionId) {
-        const txHash = await splitPosition(market.conditionId, amount);
-        setTxStatus({ isOpen: true, status: "success", txHash });
-      }
+      const price = orderBook?.bestAsk || parseFloat(activeOutcome.probability) / 100;
+      
+      // Place order on-chain
+      const txHash = await placeOrderOnChain({
+        marketId: market!.id,
+        outcomeId: activeOutcome.id,
+        amount: amount,
+        price: price.toString(),
+        isBuy: true,
+      });
 
+      setTxStatus({ isOpen: true, status: "success", txHash });
+
+      // Update database
       buyMutation.mutate({
         userId: user.id!,
         marketId: market!.id,
         outcomeId: activeOutcome.id,
         amountUSD: amountNum,
-        price: parseFloat(activeOutcome.probability) / 100,
+        price: price,
       });
+
+      setAmount("");
     } catch (error: any) {
       setTxStatus({ 
         isOpen: true, 

@@ -44,24 +44,82 @@ export function useContracts() {
         }
     };
 
-    const placeOrder = async (order: { positionId: string, amount: string, price: string, isBuy: boolean }) => {
-        if (!addresses.ORDER_BOOK_ADDRESS) return;
+    const placeOrder = async (params: { 
+        marketId: number;
+        outcomeId: number;
+        amount: string;
+        price: string;
+        isBuy: boolean;
+    }) => {
+        if (!addresses.ORDER_BOOK_ADDRESS) {
+            throw new Error("OrderBook contract not deployed");
+        }
 
         try {
-            const tx = await writeContractAsync({
+            // First approve USDC
+            const usdcAddress = "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582" as Address;
+            const usdcAbi = [
+                {
+                    inputs: [{ name: "spender", type: "address" }, { name: "amount", type: "uint256" }],
+                    name: "approve",
+                    outputs: [{ name: "", type: "bool" }],
+                    stateMutability: "nonpayable",
+                    type: "function",
+                },
+            ] as const;
+
+            const approvalTx = await writeContractAsync({
+                address: usdcAddress,
+                abi: usdcAbi,
+                functionName: "approve",
+                args: [addresses.ORDER_BOOK_ADDRESS as Address, parseUnits(params.amount, 6)],
+            });
+
+            console.log("USDC approved:", approvalTx);
+
+            // Then place order
+            const orderTx = await writeContractAsync({
                 address: addresses.ORDER_BOOK_ADDRESS as Address,
                 abi: OrderBookABI,
                 functionName: "placeOrder",
                 args: [
-                    order.positionId as Address,
-                    parseUnits(order.amount, 18),
-                    parseUnits(order.price, 18),
-                    order.isBuy
+                    BigInt(params.marketId),
+                    BigInt(params.outcomeId),
+                    parseUnits(params.amount, 6),
+                    parseUnits(params.price, 2),
+                    params.isBuy
                 ],
+            });
+            
+            return orderTx;
+        } catch (error) {
+            console.error("Place order failed:", error);
+            throw error;
+        }
+    };
+
+    const approveUSDC = async (spender: Address, amount: string) => {
+        const usdcAddress = "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582" as Address;
+        const usdcAbi = [
+            {
+                inputs: [{ name: "spender", type: "address" }, { name: "amount", type: "uint256" }],
+                name: "approve",
+                outputs: [{ name: "", type: "bool" }],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+        ] as const;
+
+        try {
+            const tx = await writeContractAsync({
+                address: usdcAddress,
+                abi: usdcAbi,
+                functionName: "approve",
+                args: [spender, parseUnits(amount, 6)],
             });
             return tx;
         } catch (error) {
-            console.error("Place order failed:", error);
+            console.error("USDC approval failed:", error);
             throw error;
         }
     };
@@ -69,6 +127,7 @@ export function useContracts() {
     return {
         addresses,
         splitPosition,
-        placeOrder
+        placeOrder,
+        approveUSDC
     };
 }

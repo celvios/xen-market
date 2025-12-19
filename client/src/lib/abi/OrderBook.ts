@@ -15,10 +15,16 @@ export const OrderBookABI = [
                 "type": "address"
             },
             {
-                "indexed": true,
-                "internalType": "bytes32",
-                "name": "positionId",
-                "type": "bytes32"
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "marketId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "outcomeId",
+                "type": "uint256"
             },
             {
                 "indexed": false,
@@ -45,9 +51,14 @@ export const OrderBookABI = [
     {
         "inputs": [
             {
-                "internalType": "bytes32",
-                "name": "positionId",
-                "type": "bytes32"
+                "internalType": "uint256",
+                "name": "marketId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "outcomeId",
+                "type": "uint256"
             },
             {
                 "internalType": "uint256",
@@ -66,6 +77,25 @@ export const OrderBookABI = [
             }
         ],
         "name": "placeOrder",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "orderId",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "orderId",
+                "type": "uint256"
+            }
+        ],
+        "name": "cancelOrder",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
