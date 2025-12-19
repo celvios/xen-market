@@ -124,10 +124,43 @@ export function useContracts() {
         }
     };
 
+    const sellShares = async (params: { 
+        marketId: number;
+        outcomeId: number;
+        shares: string;
+        price: string;
+    }) => {
+        if (!addresses.ORDER_BOOK_ADDRESS) {
+            throw new Error("OrderBook contract not deployed");
+        }
+
+        try {
+            // Place sell order on OrderBook
+            const orderTx = await writeContractAsync({
+                address: addresses.ORDER_BOOK_ADDRESS as Address,
+                abi: OrderBookABI,
+                functionName: "placeOrder",
+                args: [
+                    BigInt(params.marketId),
+                    BigInt(params.outcomeId),
+                    parseUnits(params.shares, 6), // shares as amount
+                    parseUnits(params.price, 2),
+                    false // isBuy = false for sell orders
+                ],
+            });
+            
+            return orderTx;
+        } catch (error) {
+            console.error("Sell order failed:", error);
+            throw error;
+        }
+    };
+
     return {
         addresses,
         splitPosition,
         placeOrder,
+        sellShares,
         approveUSDC
     };
 }

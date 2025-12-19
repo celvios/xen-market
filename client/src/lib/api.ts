@@ -111,6 +111,25 @@ export async function executeBuy(params: {
   return res.json();
 }
 
+export async function executeSell(params: {
+  userId: string;
+  marketId: number;
+  outcomeId: number;
+  shares: number;
+  price: number;
+}): Promise<{ trade: Trade; newBalance: string }> {
+  const res = await fetch(`${API_URL}/trade/sell`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || "Trade failed");
+  }
+  return res.json();
+}
+
 // Portfolio
 export async function fetchPortfolio(userId: string): Promise<Position[]> {
   const res = await fetch(`${API_URL}/portfolio/${userId}`);

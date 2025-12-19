@@ -3,7 +3,7 @@ import Layout from "@/components/layout";
 import { useRoute, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/lib/store";
-import { fetchMarket, executeBuy, fetchOrderBook } from "@/lib/api";
+import { fetchMarket, executeBuy, executeSell, fetchOrderBook, fetchPortfolio } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { useContracts } from "@/hooks/use-contracts";
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,14 @@ export default function MarketDetails() {
   });
 
   const { user, refreshUser } = useStore();
-  const { splitPosition, placeOrder: placeOrderOnChain } = useContracts();
+
+  const { data: userPositions = [] } = useQuery({
+    queryKey: ["portfolio", user.id],
+    queryFn: () => fetchPortfolio(user.id!),
+    enabled: !!user.id,
+  });
+
+  const { splitPosition, placeOrder: placeOrderOnChain, sellShares: sellSharesOnChain } = useContracts();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [amount, setAmount] = useState("");
@@ -102,6 +109,26 @@ export default function MarketDetails() {
     onError: (error: Error) => {
       toast({
         title: "Database Sync Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const sellMutation = useMutation({
+    mutationFn: executeSell,
+    onSuccess: () => {
+      toast({
+        title: "Shares Sold",
+        description: `Successfully sold ${amount} shares`,
+      });
+      setAmount("");
+      refreshUser();
+      queryClient.invalidateQueries({ queryKey: ["portfolio", user.id] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Sell Failed",
         description: error.message,
         variant: "destructive",
       });
@@ -160,6 +187,80 @@ export default function MarketDetails() {
         marketId: market!.id,
         outcomeId: activeOutcome.id,
         amountUSD: amountNum,
+        price: price,
+      });
+
+      setAmount("");
+    } catch (error: any) {
+      setTxStatus({ 
+        isOpen: true, 
+        status: "error", 
+        error: error.message || "Transaction failed" 
+      });
+    } finally {
+      setIsTransacting(false);
+    }
+  };
+
+  const handleSell = async () => {
+    if (!user.isLoggedIn) {
+      toast({
+        title: "Connect Wallet",
+        description: "Please connect your wallet to trade.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!activeOutcome || !amount) {
+      toast({
+        title: "Invalid Input",
+        description: "Please enter number of shares to sell.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const sharesNum = parseFloat(amount);
+    if (isNaN(sharesNum) || sharesNum <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid number of shares.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const position = userPositions.find(p => p.marketId === market?.id && p.outcomeId === activeOutcome.id);
+    if (!position || parseFloat(position.shares) < sharesNum) {
+      toast({
+        title: "Insufficient Shares",
+        description: "You don't have enough shares to sell.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsTransacting(true);
+    setTxStatus({ isOpen: true, status: "pending" });
+    
+    try {
+      const price = orderBook?.bestBid || parseFloat(activeOutcome.probability) / 100;
+      
+      const txHash = await sellSharesOnChain({
+        marketId: market!.id,
+        outcomeId: activeOutcome.id,
+        shares: amount,
+        price: price.toString(),
+      });
+
+      setTxStatus({ isOpen: true, status: "success", txHash });
+
+      sellMutation.mutate({
+        userId: user.id!,
+        marketId: market!.id,
+        outcomeId: activeOutcome.id,
+        shares: sharesNum,
         price: price,
       });
 
@@ -392,11 +493,77 @@ export default function MarketDetails() {
                     )}
                   </TabsContent>
 
-                  <TabsContent value="sell">
-                    <div className="text-center py-16 text-muted-foreground glass-panel rounded-xl mt-4 border-dashed">
-                      <BarChart3 className="w-10 h-10 mx-auto mb-4 opacity-10" />
-                      <p className="text-[10px] font-black uppercase tracking-widest leading-loose">No Positions Detected</p>
-                    </div>
+                  <TabsContent value="sell" className="space-y-6">
+                    {userPositions.filter(p => p.marketId === market?.id && p.outcomeId === activeOutcome?.id).length > 0 ? (
+                      <>
+                        <div className="p-4 bg-muted/20 border border-border/50 rounded-xl space-y-4">
+                          <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                            <span>Outcome Selected</span>
+                            <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5">{activeOutcome?.label}</Badge>
+                          </div>
+
+                          <div className="flex justify-between items-end">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Best Bid Price</span>
+                            <div className="text-3xl font-mono font-black text-foreground leading-none">
+                              {orderBook?.bestBid ? 
+                                `${orderBook.bestBid.toFixed(2)}` : 
+                                activeOutcome?.probability
+                              }<span className="text-sm text-muted-foreground ml-1">¢</span>
+                            </div>
+                          </div>
+                          
+                          <div className="text-xs text-muted-foreground">
+                            Available: {userPositions.find(p => p.marketId === market?.id && p.outcomeId === activeOutcome?.id)?.shares || "0"} shares
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Shares to Sell</label>
+                          </div>
+                          <div className="relative group">
+                            <Input
+                              type="number"
+                              placeholder="0.00"
+                              className="h-14 text-xl font-mono font-black bg-muted/20 border-border"
+                              value={amount}
+                              onChange={(e) => setAmount(e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="px-4 py-3 bg-muted/10 border border-border/30 rounded-lg">
+                            <div className="text-[9px] font-bold text-muted-foreground uppercase mb-1">You'll Receive</div>
+                            <div className="text-sm font-mono font-bold text-foreground">
+                              ${amount && orderBook?.bestBid ? 
+                                (parseFloat(amount) * orderBook.bestBid).toFixed(2) : "0.00"
+                              }
+                            </div>
+                          </div>
+                          <div className="px-4 py-3 bg-muted/10 border border-border/30 rounded-lg text-right">
+                            <div className="text-[9px] font-bold text-muted-foreground uppercase mb-1">Avg Cost</div>
+                            <div className="text-sm font-mono font-bold text-foreground">
+                              ${userPositions.find(p => p.marketId === market?.id && p.outcomeId === activeOutcome?.id)?.avgPrice || "0.00"}
+                            </div>
+                          </div>
+                        </div>
+
+                        <Button
+                          className="w-full font-black text-sm uppercase tracking-[0.2em] h-14 bg-[#ef4444] hover:bg-[#ef4444]/90 text-white shadow-lg shadow-[#ef4444]/20"
+                          onClick={handleSell}
+                          disabled={!amount || parseFloat(amount) <= 0 || isTransacting}
+                        >
+                          {isTransacting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
+                          Place Sell Order
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="text-center py-16 text-muted-foreground glass-panel rounded-xl mt-4 border-dashed">
+                        <BarChart3 className="w-10 h-10 mx-auto mb-4 opacity-10" />
+                        <p className="text-[10px] font-black uppercase tracking-widest leading-loose">No Position in {activeOutcome?.label}</p>
+                      </div>
+                    )}
                   </TabsContent>
                 </Tabs>
               </CardContent>
