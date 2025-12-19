@@ -84,9 +84,13 @@ export default function Portfolio() {
               <div className="text-3xl font-mono font-bold text-foreground" data-testid="text-balance">
                 ${user.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
-              {parseFloat(user.balance) === 0 && (
+              {parseFloat(user.balance) === 0 && user.walletAddress && (
                 <div className="mt-4">
-                  <MockUSDCFaucet userId={user.id!} onSuccess={refreshUser} />
+                  <MockUSDCFaucet 
+                    userId={user.id!} 
+                    walletAddress={user.walletAddress}
+                    onSuccess={refreshUser} 
+                  />
                 </div>
               )}
               <div className="grid grid-cols-2 gap-2 mt-4">
