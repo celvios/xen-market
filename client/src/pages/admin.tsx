@@ -73,7 +73,7 @@ export default function AdminPage() {
           title: marketForm.title,
           description: marketForm.description,
           category: marketForm.category,
-          endDate: marketForm.endDate,
+          endDate: new Date(marketForm.endDate).toISOString(),
           marketType: marketForm.marketType,
           scalarRange: marketForm.marketType === "scalar" ? marketForm.scalarRange : null,
           outcomes: marketForm.outcomes.map((label, index) => ({
@@ -86,12 +86,25 @@ export default function AdminPage() {
       
       if (res.ok) {
         toast({ title: "Success", description: "Market created successfully" });
-        setMarketForm({ title: "", description: "", category: "Crypto", endDate: "" });
+        setMarketForm({ 
+          title: "", 
+          description: "", 
+          category: "Crypto", 
+          endDate: "",
+          marketType: "binary",
+          outcomes: ["Yes", "No"],
+          scalarRange: { min: 0, max: 100 },
+        });
       } else {
-        throw new Error("Failed to create market");
+        const error = await res.json();
+        throw new Error(error.error || "Failed to create market");
       }
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to create market", variant: "destructive" });
+    } catch (error: any) {
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to create market", 
+        variant: "destructive" 
+      });
     }
     setLoading(null);
   };
@@ -242,6 +255,7 @@ export default function AdminPage() {
                 <Input
                   type="datetime-local"
                   value={marketForm.endDate}
+                  min={new Date().toISOString().slice(0, 16)}
                   onChange={(e) => setMarketForm({ ...marketForm, endDate: e.target.value })}
                 />
               </div>
