@@ -158,8 +158,10 @@ export async function registerRoutes(
     try {
       const { title, description, image, category, endDate, conditionId, txHash, outcomes, marketType, scalarRange } = req.body;
 
+      console.log("Received market creation request:", { title, category, endDate, marketType, outcomesCount: outcomes?.length });
+
       if (!title || !category || !endDate) {
-        return res.status(400).json({ error: "Missing required fields" });
+        return res.status(400).json({ error: "Missing required fields: title, category, or endDate" });
       }
 
       // Validate market type specific requirements
@@ -202,10 +204,12 @@ export async function registerRoutes(
       const { cacheService } = await import("./cache");
       await cacheService.invalidatePattern("markets:*");
 
+      console.log("Market created successfully:", market.id);
       res.json(market);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating market:", error);
-      res.status(500).json({ error: "Failed to create market" });
+      console.error("Error stack:", error.stack);
+      res.status(500).json({ error: error.message || "Failed to create market" });
     }
   });
 
