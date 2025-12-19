@@ -1,7 +1,7 @@
 import { storage } from "./storage";
 import { type InsertMarket, type InsertOutcome } from "@shared/schema";
 import { createPublicClient, http, parseAbiItem } from "viem";
-import { hardhat } from "viem/chains";
+import { polygonAmoy } from "viem/chains";
 import fs from "fs";
 import path from "path";
 
@@ -18,8 +18,8 @@ if (fs.existsSync(addressesPath)) {
 }
 
 const publicClient = createPublicClient({
-    chain: hardhat,
-    transport: http()
+    chain: polygonAmoy,
+    transport: http("https://rpc-amoy.polygon.technology")
 });
 
 const MarketCreatedAbi = parseAbiItem(

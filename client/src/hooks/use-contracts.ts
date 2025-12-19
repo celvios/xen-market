@@ -11,9 +11,13 @@ export function useContracts() {
     const { address } = useAccount();
 
     useEffect(() => {
-        fetch("/api/config")
+        const apiUrl = import.meta.env.VITE_API_URL || "";
+        fetch(`${apiUrl}/api/config`)
             .then(res => res.json())
-            .then(data => setAddresses(data))
+            .then(data => {
+                console.log("Contract addresses loaded:", data);
+                setAddresses(data);
+            })
             .catch(err => console.error("Failed to fetch contract addresses:", err));
     }, []);
 

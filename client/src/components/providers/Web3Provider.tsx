@@ -1,6 +1,6 @@
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiProvider } from 'wagmi';
-import { polygon, hardhat } from 'wagmi/chains';
+import { polygonAmoy } from 'wagmi/chains';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { queryClient } from '@/lib/queryClient';
@@ -15,13 +15,13 @@ const metadata = {
 };
 
 const wagmiAdapter = new WagmiAdapter({
-  networks: [polygon, hardhat],
+  networks: [polygonAmoy],
   projectId,
 });
 
 createAppKit({
   adapters: [wagmiAdapter],
-  networks: [polygon, hardhat],
+  networks: [polygonAmoy],
   projectId,
   metadata,
   features: {
