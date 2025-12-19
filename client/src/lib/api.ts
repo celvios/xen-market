@@ -131,3 +131,19 @@ export async function fetchLeaderboard(limit: number = 10): Promise<{ user: User
   if (!res.ok) throw new Error("Failed to fetch leaderboard");
   return res.json();
 }
+
+// Order Book
+export interface OrderBookData {
+  bids: { price: number; size: number; total: number }[];
+  asks: { price: number; size: number; total: number }[];
+  bestBid: number | null;
+  bestAsk: number | null;
+  spread: number | null;
+  lastPrice: number | null;
+}
+
+export async function fetchOrderBook(marketId: number, outcomeId: number): Promise<OrderBookData> {
+  const res = await fetch(`${API_URL}/markets/${marketId}/outcomes/${outcomeId}/orderbook`);
+  if (!res.ok) throw new Error("Failed to fetch order book");
+  return res.json();
+}

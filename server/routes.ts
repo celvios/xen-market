@@ -348,6 +348,62 @@ export async function registerRoutes(
     }
   });
 
+  // Get order book for outcome
+  app.get("/api/markets/:marketId/outcomes/:outcomeId/orderbook", async (req, res) => {
+    try {
+      const marketId = parseInt(req.params.marketId);
+      const outcomeId = parseInt(req.params.outcomeId);
+      
+      const orders = await storage.getOpenOrders(marketId);
+      const outcomeOrders = orders.filter(o => o.outcomeId === outcomeId);
+      
+      const buyOrders = outcomeOrders
+        .filter(o => o.side === "buy")
+        .sort((a, b) => parseFloat(b.price) - parseFloat(a.price))
+        .slice(0, 10);
+      
+      const sellOrders = outcomeOrders
+        .filter(o => o.side === "sell")
+        .sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
+        .slice(0, 10);
+      
+      const bestBid = buyOrders[0] ? parseFloat(buyOrders[0].price) : null;
+      const bestAsk = sellOrders[0] ? parseFloat(sellOrders[0].price) : null;
+      const spread = bestBid && bestAsk ? bestAsk - bestBid : null;
+      const lastPrice = await getLastTradePrice(marketId, outcomeId);
+      
+      res.json({
+        bids: buyOrders.map(o => ({
+          price: parseFloat(o.price),
+          size: parseFloat(o.size) - parseFloat(o.filledSize),
+          total: (parseFloat(o.size) - parseFloat(o.filledSize)) * parseFloat(o.price)
+        })),
+        asks: sellOrders.map(o => ({
+          price: parseFloat(o.price),
+          size: parseFloat(o.size) - parseFloat(o.filledSize),
+          total: (parseFloat(o.size) - parseFloat(o.filledSize)) * parseFloat(o.price)
+        })),
+        bestBid,
+        bestAsk,
+        spread,
+        lastPrice
+      });
+    } catch (error) {
+      console.error("Error fetching order book:", error);
+      res.status(500).json({ error: "Failed to fetch order book" });
+    }
+  });
+
+  async function getLastTradePrice(marketId: number, outcomeId: number): Promise<number | null> {
+    try {
+      const trades = await storage.getMarketTrades(marketId);
+      const outcomeTrades = trades.filter(t => t.outcomeId === outcomeId);
+      return outcomeTrades.length > 0 ? parseFloat(outcomeTrades[0].price) : null;
+    } catch {
+      return null;
+    }
+  }
+
   // Get user orders
   app.get("/api/orders/user/:userId", async (req, res) => {
     try {

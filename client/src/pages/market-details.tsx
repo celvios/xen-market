@@ -3,7 +3,7 @@ import Layout from "@/components/layout";
 import { useRoute, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "@/lib/store";
-import { fetchMarket, executeBuy } from "@/lib/api";
+import { fetchMarket, executeBuy, fetchOrderBook } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { useContracts } from "@/hooks/use-contracts";
 import { Button } from "@/components/ui/button";
@@ -75,6 +75,13 @@ export default function MarketDetails() {
     error?: string;
   }>({ isOpen: false, status: "pending" });
   const { gasData, estimateGas } = useGasEstimation();
+
+  const { data: orderBook } = useQuery({
+    queryKey: ["orderbook", id, selectedOutcome || market?.outcomes[0]?.id],
+    queryFn: () => fetchOrderBook(id, selectedOutcome || market?.outcomes[0]?.id || 0),
+    enabled: !!market && (!!selectedOutcome || !!market?.outcomes[0]),
+    refetchInterval: 5000,
+  });
 
   const activeOutcome = useMemo(() => {
     if (!market) return null;
@@ -238,7 +245,12 @@ export default function MarketDetails() {
                     )}
                   >
                     <div className="text-sm text-muted-foreground mb-1">{outcome.label}</div>
-                    <div className="text-2xl font-mono font-black">{outcome.probability}¢</div>
+                    <div className="text-2xl font-mono font-black">
+                      {orderBook && selectedOutcome === outcome.id ? 
+                        `${(orderBook.lastPrice || parseFloat(outcome.probability) / 100).toFixed(2)}¢` : 
+                        `${outcome.probability}¢`
+                      }
+                    </div>
                   </button>
                 ))}
               </div>
@@ -248,7 +260,7 @@ export default function MarketDetails() {
             <PriceChart marketId={market.id} outcomeId={activeOutcome?.id} />
             
             {/* Order Book */}
-            <OrderBook marketId={market.id} />
+            <OrderBook marketId={market.id} outcomeId={activeOutcome?.id} />
             
             {/* Market Resolution */}
             <MarketResolution market={market} isAdmin={user.walletAddress === "0x1234"} />
@@ -291,11 +303,19 @@ export default function MarketDetails() {
                       </div>
 
                       <div className="flex justify-between items-end">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Execution Price</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Best Ask Price</span>
                         <div className="text-3xl font-mono font-black text-foreground leading-none">
-                          {activeOutcome?.probability}<span className="text-sm text-muted-foreground ml-1">¢</span>
+                          {orderBook?.bestAsk ? 
+                            `${orderBook.bestAsk.toFixed(2)}` : 
+                            activeOutcome?.probability
+                          }<span className="text-sm text-muted-foreground ml-1">¢</span>
                         </div>
                       </div>
+                      {orderBook?.spread && (
+                        <div className="text-xs text-muted-foreground">
+                          Spread: {orderBook.spread.toFixed(2)}¢
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -318,12 +338,20 @@ export default function MarketDetails() {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="px-4 py-3 bg-muted/10 border border-border/30 rounded-lg">
                         <div className="text-[9px] font-bold text-muted-foreground uppercase mb-1">Est. Shares</div>
-                        <div className="text-sm font-mono font-bold text-foreground">{amount ? (parseFloat(amount) / (parseFloat(activeOutcome!.probability) / 100)).toFixed(2) : "0.00"}</div>
+                        <div className="text-sm font-mono font-bold text-foreground">
+                          {amount && orderBook?.bestAsk ? 
+                            (parseFloat(amount) / orderBook.bestAsk).toFixed(2) : 
+                            amount ? (parseFloat(amount) / (parseFloat(activeOutcome!.probability) / 100)).toFixed(2) : "0.00"
+                          }
+                        </div>
                       </div>
                       <div className="px-4 py-3 bg-muted/10 border border-border/30 rounded-lg text-right">
                         <div className="text-[9px] font-bold text-muted-foreground uppercase mb-1">Max Profit</div>
                         <div className="text-sm font-mono font-bold text-success">
-                          ${amount ? ((parseFloat(amount) / (parseFloat(activeOutcome!.probability) / 100)) * 1).toFixed(2) : "0.00"}
+                          ${amount && orderBook?.bestAsk ? 
+                            ((parseFloat(amount) / orderBook.bestAsk) * (1 - orderBook.bestAsk)).toFixed(2) : 
+                            amount ? ((parseFloat(amount) / (parseFloat(activeOutcome!.probability) / 100)) * 1).toFixed(2) : "0.00"
+                          }
                         </div>
                       </div>
                     </div>
