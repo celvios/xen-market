@@ -149,14 +149,10 @@ export async function registerRoutes(
       if (!markets) {
         markets = await storage.getAllMarkets();
         
-        // Calculate real volume from trades
-        markets = await Promise.all(markets.map(async (market) => {
-          const trades = await storage.getMarketTrades(market.id);
-          const volume = trades.reduce((sum, trade) => sum + parseFloat(trade.totalAmount), 0);
-          return { ...market, volume: volume.toFixed(2) };
-        }));
+        // Volume is already stored in the database, no need to recalculate on every request
+        // For real-time volume updates, use a background job or WebSocket updates
         
-        await cacheService.set(cacheKey, markets, 60); // Cache for 1 minute
+        await cacheService.set(cacheKey, markets, 300); // Cache for 5 minutes
       }
       
       res.json(markets);

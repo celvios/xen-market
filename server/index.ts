@@ -24,6 +24,10 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
+// Enable gzip compression for responses
+import compression from 'compression';
+app.use(compression());
+
 // CORS configuration
 app.use((req, res, next) => {
   const allowedOrigins = [
@@ -91,6 +95,11 @@ await registerRoutes(httpServer, app);
 // Initialize WebSocket
 initWebSocket(httpServer);
 log("WebSocket server initialized");
+
+// Start volume updater for background market volume calculations
+const { volumeUpdater } = await import("./volume-updater");
+volumeUpdater.start(60000); // Update every minute
+log("Volume updater started");
 
 // Start indexer in all environments
 log("Starting blockchain indexer...");

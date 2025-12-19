@@ -83,13 +83,22 @@ export class DatabaseStorage implements IStorage {
 
   async getAllMarkets(): Promise<(Market & { outcomes: Outcome[] })[]> {
     const allMarkets = await db.select().from(markets).orderBy(desc(markets.isFeatured), desc(markets.createdAt));
-    const marketsWithOutcomes = await Promise.all(
-      allMarkets.map(async (market: Market) => {
-        const marketOutcomes = await db.select().from(outcomes).where(eq(outcomes.marketId, market.id));
-        return { ...market, outcomes: marketOutcomes };
-      })
-    );
-    return marketsWithOutcomes;
+    
+    // Fetch all outcomes in a single query
+    const allOutcomes = await db.select().from(outcomes);
+    
+    // Group outcomes by marketId
+    const outcomesByMarket = allOutcomes.reduce((acc, outcome) => {
+      if (!acc[outcome.marketId]) acc[outcome.marketId] = [];
+      acc[outcome.marketId].push(outcome);
+      return acc;
+    }, {} as Record<number, Outcome[]>);
+    
+    // Attach outcomes to markets
+    return allMarkets.map(market => ({
+      ...market,
+      outcomes: outcomesByMarket[market.id] || []
+    }));
   }
 
   async getMarket(id: number): Promise<(Market & { outcomes: Outcome[] }) | undefined> {
